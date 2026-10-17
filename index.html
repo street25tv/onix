@@ -211,9 +211,12 @@ function refiHTML(r) {
     '<tr><td>Cuotas por pagar</td><td class="num">' + a.cuotasRestantes + '</td><td class="num"><b>' + s.n + '</b></td></tr>' +
     '<tr><td>Días de atraso</td><td class="num">' + a.diasAtraso + '</td><td class="num"><b>0</b></td></tr></tbody></table></div>' +
     '<div class="small mt" style="line-height:1.85"><b style="color:var(--gold)">Cómo se calcula</b><br>' +
-    'Capital pendiente <b>' + money(b.capitalPendiente) + '</b>' + (b.adicional ? ' + dinero adicional <b>' + money(b.adicional) + '</b>' : '') +
+    'Capital pendiente <b>' + money(b.capitalPendiente) + '</b>' +
+    (b.capitalizado && b.interesVencido ? ' + interés causado no pagado <b>' + money(b.interesVencido) + '</b>' : '') +
+    (b.adicional ? ' + dinero adicional <b>' + money(b.adicional) + '</b>' : '') +
+    (b.capitalizado && (b.interesVencido || b.adicional) ? ' = nuevo capital <b>' + money(s.capital) + '</b>' : '') +
     ' → interés ' + s.tasa + '% × ' + s.meses + (s.meses == 1 ? ' mes' : ' meses') + ' = <b>' + money(s.interesNuevo) + '</b><br>' +
-    (b.interesVencido ? 'Interés vencido sin pagar (se traslada sin generar más interés): <b>' + money(b.interesVencido) + '</b><br>' : '') +
+    (!b.capitalizado && b.interesVencido ? 'Interés vencido sin pagar (se traslada sin generar más interés): <b>' + money(b.interesVencido) + '</b><br>' : '') +
     (b.comision ? 'Comisión de refinanciación: <b>' + money(b.comision) + '</b><br>' : '') +
     '<span style="color:var(--ok)">Interés futuro que se descuenta: <b>' + money(b.interesCondonado) + '</b></span><br>' +
     (dif > 0 ? '<span style="color:var(--ok)">La cuota mensual baja ' + money(dif) + ' (' + Math.round(dif / (a.cuotaMensual || 1) * 100) + '%)</span>'
