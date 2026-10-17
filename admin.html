@@ -103,6 +103,8 @@ hr{border:none;border-top:1px solid var(--line);margin:16px 0}
 .score{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
 .sc-verde{background:var(--okDim);color:var(--ok);border:2px solid var(--ok)}
 .sc-amarillo{background:var(--warnDim);color:var(--warn);border:2px solid var(--warn)}
+.refires{background:radial-gradient(400px 160px at 50% 0,rgba(201,169,97,.16),transparent),var(--bg);border:1px solid var(--gold);border-radius:16px;padding:16px;text-align:center;margin-top:14px}
+.chip.c-refi{background:rgba(120,150,255,.14);color:#9fb4ff}
 .sc-rojo{background:var(--badDim);color:var(--bad);border:2px solid var(--bad)}
 </style>
 
@@ -170,10 +172,12 @@ function chipSit(s, atraso) {
   if (s === 'En mora') return '<span class="chip c-bad">Mora ' + atraso + 'd</span>';
   if (s === 'Al día') return '<span class="chip c-ok">Al día</span>';
   if (s === 'Pagado') return '<span class="chip c-gold">Pagado</span>';
+  if (s === 'Refinanciado') return '<span class="chip c-refi">Refinanciado</span>';
   return '<span class="chip c-mut">' + esc(s) + '</span>';
 }
 function chipCuota(q, hoy) {
   if (q.estado === 'Pagada') return '<span class="chip c-ok">Pagada</span>';
+  if (q.estado === 'Refinanciada') return '<span class="chip c-refi">Refinanciada</span>';
   if (q.fecha < hoy) return '<span class="chip c-bad">Vencida</span>';
   if (q.estado === 'Parcial') return '<span class="chip c-warn">Parcial</span>';
   if (q.fecha === hoy) return '<span class="chip c-warn">Hoy</span>';
@@ -186,6 +190,28 @@ function fechaBonita(s) {
 }
 function hoyLocal() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function wa(tel, txt) { let t = String(tel || '').replace(/\D/g, ''); if (t.length === 10) t = '57' + t; return 'https://wa.me/' + t + '?text=' + encodeURIComponent(txt || ''); }
+const FREC_TXT = { Diaria: 'diaria', Semanal: 'semanal', Quincenal: 'quincenal', Mensual: 'mensual' };
+function refiHTML(r) {
+  const s = r.simulacion, a = r.actual, b = r.base;
+  const dif = a.cuotaMensual - s.cuotaMensual;
+  return '<div class="refires"><div class="small mut">Nueva cuota ' + FREC_TXT[s.frecuencia] + '</div><div class="big">' + money(s.cuota) + '</div>' +
+    '<div class="small mut">' + s.n + ' cuotas · total ' + money(s.total) + '</div></div>' +
+    '<div class="tw mt"><table><thead><tr><th></th><th class="num">Actual</th><th class="num">Refinanciado</th></tr></thead><tbody>' +
+    '<tr><td>Saldo</td><td class="num">' + money(a.saldo) + '</td><td class="num"><b>' + money(s.total) + '</b></td></tr>' +
+    '<tr><td>Cuota</td><td class="num">' + money(a.valorCuota) + ' ' + FREC_TXT[a.frecuencia] + '</td><td class="num"><b>' + money(s.cuota) + ' ' + FREC_TXT[s.frecuencia] + '</b></td></tr>' +
+    '<tr><td>Equivale al mes</td><td class="num">' + money(a.cuotaMensual) + '</td><td class="num"><b>' + money(s.cuotaMensual) + '</b></td></tr>' +
+    '<tr><td>Cuotas por pagar</td><td class="num">' + a.cuotasRestantes + '</td><td class="num"><b>' + s.n + '</b></td></tr>' +
+    '<tr><td>Días de atraso</td><td class="num">' + a.diasAtraso + '</td><td class="num"><b>0</b></td></tr></tbody></table></div>' +
+    '<div class="small mt" style="line-height:1.85"><b style="color:var(--gold)">Cómo se calcula</b><br>' +
+    'Capital pendiente <b>' + money(b.capitalPendiente) + '</b>' + (b.adicional ? ' + dinero adicional <b>' + money(b.adicional) + '</b>' : '') +
+    ' → interés ' + s.tasa + '% × ' + s.meses + (s.meses == 1 ? ' mes' : ' meses') + ' = <b>' + money(s.interesNuevo) + '</b><br>' +
+    (b.interesVencido ? 'Interés vencido sin pagar (se traslada sin generar más interés): <b>' + money(b.interesVencido) + '</b><br>' : '') +
+    (b.comision ? 'Comisión de refinanciación: <b>' + money(b.comision) + '</b><br>' : '') +
+    '<span style="color:var(--ok)">Interés futuro que se descuenta: <b>' + money(b.interesCondonado) + '</b></span><br>' +
+    (dif > 0 ? '<span style="color:var(--ok)">La cuota mensual baja ' + money(dif) + ' (' + Math.round(dif / (a.cuotaMensual || 1) * 100) + '%)</span>'
+             : '<span style="color:var(--warn)">La cuota mensual sube ' + money(-dif) + '</span>') + '</div>';
+}
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 function tablaCuotas(cuotas, hoy) {
   return '<div class="tw" style="max-height:340px;overflow:auto"><table><thead><tr><th>#</th><th>Vence</th><th class="num">Cuota</th><th class="num">Abonado</th><th>Estado</th></tr></thead><tbody>' +
     cuotas.map(q => '<tr><td>' + q.n + '</td><td>' + fechaBonita(q.fecha) + '</td><td class="num">' + money(q.valor) + '</td><td class="num">' + money(q.pagado) + '</td><td>' + chipCuota(q, hoy) + (q.atraso ? ' <span class="small mut">+' + q.atraso + 'd</span>' : '') + '</td></tr>').join('') +
@@ -263,7 +289,7 @@ function solicitudes() {
     return `<div class="card"><div class="row" style="align-items:flex-start;gap:16px">
       <div class="score sc-${a.semaforo}">${a.score}</div>
       <div style="flex:1;min-width:220px">
-        <div class="row between"><div><b style="font-size:17px">${esc(s.nombre)}</b> <span class="small mut">CC ${esc(s.documento)} · ${s.id} · ${s.fecha}</span></div>
+        <div class="row between"><div>${s.tipo === 'Refinanciación' ? `<span class="chip c-refi">Refinanciación de ${s.creditoOrigen}</span> ` : ''}<b style="font-size:17px">${esc(s.nombre)}</b> <span class="small mut">CC ${esc(s.documento)} · ${s.id} · ${s.fecha}</span></div>
         <span class="chip ${a.semaforo === 'verde' ? 'c-ok' : a.semaforo === 'amarillo' ? 'c-warn' : 'c-bad'}">${a.recomendacion}</span></div>
         <div class="grid g4 mt small">
           <div><span class="mut">Solicita</span><br><b>${money(s.monto)}</b> · ${s.meses}m · ${s.frecuencia}</div>
@@ -271,9 +297,11 @@ function solicitudes() {
           <div><span class="mut">Ingresos / cuota mes</span><br><b>${money(s.ingresos)}</b> · ${a.ratio}%</div>
           <div><span class="mut">Monto sugerido</span><br><b>${money(a.montoSugerido)}</b></div>
         </div>
+        ${s.refi && s.refi.actual ? `<div class="small mt">Actual: saldo <b>${money(s.refi.actual.saldo)}</b> · cuota ${money(s.refi.actual.valorCuota)} ${FREC_TXT[s.refi.actual.frecuencia]} · ${s.refi.actual.diasAtraso} días de atraso → Nuevo: <b>${money(s.refi.simulacion.cuota)}</b> ${FREC_TXT[s.refi.simulacion.frecuencia]} × ${s.refi.simulacion.n} · total ${money(s.refi.nuevoSaldo)}${s.adicional ? ' · incluye ' + money(s.adicional) + ' adicional' : ''}</div>` : ''}
+        ${s.refi && s.refi.error ? `<div class="small mt" style="color:var(--bad)">${esc(s.refi.error)}</div>` : ''}
         <ul class="motivos">${a.motivos.map(m => `<li>${esc(m)}</li>`).join('')}</ul>
         <div class="small mut mt">${esc(s.ocupacion)} · ${esc(s.direccion)} ${esc(s.barrio)} · Destino: ${esc(s.destino || '—')} · Ref: ${esc(s.referencia || '—')} ${esc(s.telReferencia || '')}</div>
-        <div class="row mt"><button class="btn sm" onclick="aprobar('${s.id}')">Aprobar y desembolsar</button>
+        <div class="row mt">${s.tipo === 'Refinanciación' ? `<button class="btn sm" onclick="refinanciar('${s.creditoOrigen}','${s.id}')">Simular y aprobar</button>` : `<button class="btn sm" onclick="aprobar('${s.id}')">Aprobar y desembolsar</button>`}
           <button class="btn bad sm" onclick="rechazar('${s.id}')">Rechazar</button>
           <a class="btn dark sm" target="_blank" href="${wa(s.telefono, 'Hola ' + s.nombre.split(' ')[0] + ', te escribimos de ' + D.config.nombre + ' sobre tu solicitud de crédito ' + s.id + '.')}">WhatsApp</a></div>
       </div></div></div>`;
@@ -346,9 +374,46 @@ function nuevoCredito() {
   });
 }
 
+/* ---------------- REFINANCIACIÓN ---------------- */
+function refinanciar(creditoId, solId) {
+  const s = solId ? D.solicitudes.find(x => x.id === solId) : null;
+  const cr = D.creditos.find(x => x.id === creditoId) || {};
+  const R = { meses: s ? s.meses : Math.min(D.config.refiMaxMeses, Math.max(2, cr.meses || 2)), frec: s ? s.frecuencia : (cr.frecuencia || 'Semanal'),
+    tasa: D.config.tasa, adic: s ? s.adicional : 0 };
+  const cobs = '<option value="">— Mismo cobrador —</option>' + D.cobradores.filter(c => c.activo).map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+  modal(`<h2>Refinanciación ${creditoId}</h2><p class="mut small">${esc(cr.cliente || '')}${s ? ' · solicitud ' + s.id + ' · score ' + s.analisis.score + ' (' + s.analisis.recomendacion + ')' : ''}</p>
+    <div class="grid g3 st">
+      <div><label>Nuevo plazo (meses)</label><input id="rf_m" type="number" min="1" max="${D.config.refiMaxMeses}" value="${R.meses}"></div>
+      <div><label>Frecuencia</label><select id="rf_f">${D.config.frecuencias.map(f => `<option ${f === R.frec ? 'selected' : ''}>${f}</option>`).join('')}</select></div>
+      <div><label>Tasa mensual %</label><input id="rf_t" type="number" step="0.1" value="${R.tasa}"></div>
+      <div><label>Dinero adicional</label><input id="rf_a" inputmode="numeric" value="${R.adic ? Number(R.adic).toLocaleString('es-CO') : ''}" placeholder="$0"></div>
+      <div><label>Primera cuota (opcional)</label><input id="rf_p" type="date"></div>
+      <div><label>Cobrador</label><select id="rf_c">${cobs}</select></div>
+    </div>
+    <div id="rf_res">${LOADING}</div>
+    <p class="small mut mt">Al aprobar: el crédito ${creditoId} queda como <b>Refinanciado</b> (saldo 0), sus cuotas pendientes se cierran y se crea un crédito nuevo con el plan de arriba. Solo el dinero adicional sale de caja.</p>
+    <button class="btn full mt" id="rf_b">Aprobar refinanciación</button>`);
+  const leer = () => ({ meses: $('#rf_m').value, frecuencia: $('#rf_f').value, tasa: $('#rf_t').value, adicional: +$('#rf_a').value.replace(/\D/g, '') || 0,
+    primeraCuota: $('#rf_p').value, cobradorId: $('#rf_c').value });
+  const sim = debounce(async () => {
+    const p = leer();
+    $('#rf_res').innerHTML = LOADING;
+    try { const r = await api('adminSimularRefi', T, creditoId, p.meses, p.frecuencia, p.tasa, p.adicional); $('#rf_res').innerHTML = refiHTML(r); }
+    catch (e) { $('#rf_res').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+  }, 450);
+  ['rf_m', 'rf_f', 'rf_t'].forEach(i => $('#' + i).addEventListener('input', sim));
+  $('#rf_a').addEventListener('input', e => { const n = e.target.value.replace(/\D/g, ''); e.target.value = n ? Number(n).toLocaleString('es-CO') : ''; sim(); });
+  $('#rf_b').onclick = e => conBoton(e.currentTarget, async () => {
+    if (!confirm('¿Aprobar la refinanciación de ' + creditoId + '?')) return;
+    const nid = solId ? await api('adminAprobar', T, solId, leer()) : await api('adminRefinanciar', T, creditoId, leer());
+    cerrarModal(); toast('Refinanciado en ' + nid); await cargar(true); detalle(nid);
+  });
+  sim();
+}
+
 /* ---------------- CRÉDITOS ---------------- */
 function creditos() {
-  const fs = [['activos', 'Activos'], ['mora', 'En mora'], ['aldia', 'Al día'], ['pagados', 'Pagados'], ['anulados', 'Anulados'], ['todos', 'Todos']];
+  const fs = [['activos', 'Activos'], ['mora', 'En mora'], ['aldia', 'Al día'], ['pagados', 'Pagados'], ['refinanciados', 'Refinanciados'], ['anulados', 'Anulados'], ['todos', 'Todos']];
   $('#body').innerHTML = `<div class="row between mb"><div class="tabs" style="margin:0">${fs.map(f => `<button class="${FILTRO === f[0] ? 'on' : ''}" onclick="FILTRO='${f[0]}';creditos()">${f[1]}</button>`).join('')}</div>
     <input id="bq" placeholder="Buscar nombre, cédula o ID" style="max-width:280px" value="${esc(BUSCA)}"></div><div id="tb"></div>`;
   $('#bq').oninput = e => { BUSCA = e.target.value; tablaCreditos(); };
@@ -357,10 +422,10 @@ function creditos() {
 function tablaCreditos() {
   const q = BUSCA.toLowerCase();
   const l = D.creditos.filter(c => ({
-    activos: c.estado === 'Activo', mora: c.situacion === 'En mora', aldia: c.situacion === 'Al día', pagados: c.estado === 'Pagado', anulados: c.estado === 'Anulado', todos: true
+    activos: c.estado === 'Activo', mora: c.situacion === 'En mora', aldia: c.situacion === 'Al día', pagados: c.estado === 'Pagado', refinanciados: c.estado === 'Refinanciado', anulados: c.estado === 'Anulado', todos: true
   })[FILTRO]).filter(c => !q || (c.cliente + ' ' + c.documento + ' ' + c.id).toLowerCase().includes(q));
   $('#tb').innerHTML = l.length ? `<div class="tw"><table><thead><tr><th>Crédito</th><th>Cliente</th><th class="num">Capital</th><th>Plan</th><th class="num">Saldo</th><th class="num">Exigible</th><th>Avance</th><th>Estado</th><th>Cobrador</th></tr></thead><tbody>
-    ${l.map(c => `<tr class="click" onclick="detalle('${c.id}')"><td><b>${c.id}</b><div class="small mut">${c.desembolso}</div></td><td>${esc(c.cliente)}<div class="small mut">CC ${esc(c.documento)}</div></td>
+    ${l.map(c => `<tr class="click" onclick="detalle('${c.id}')"><td><b>${c.id}</b><div class="small mut">${c.desembolso}${c.creditoOrigen ? ' · refi ' + c.creditoOrigen : ''}</div></td><td>${esc(c.cliente)}<div class="small mut">CC ${esc(c.documento)}</div></td>
       <td class="num">${money(c.capital)}</td><td class="small">${c.numCuotas} × ${money(c.valorCuota)}<div class="mut">${c.frecuencia} · ${c.meses}m · ${c.tasa}%</div></td>
       <td class="num"><b>${money(c.saldo)}</b></td><td class="num">${c.exigible ? money(c.exigible) : '—'}</td>
       <td style="min-width:90px"><div class="bar"><i style="width:${c.avance}%"></i></div><div class="small mut">${c.cuotasPagadas}/${c.numCuotas}</div></td>
@@ -385,8 +450,8 @@ async function detalle(id) {
     <div><label>Medio</label><select id="pg_m"><option>Efectivo</option><option>Nequi</option><option>Daviplata</option><option>Transferencia</option></select></div>
     <div><label>Observación</label><input id="pg_o"></div></div>
     <div class="row mt"><button class="btn" id="pg_b">Registrar pago</button><button class="btn dark sm" onclick="$('#pg_v').value='${Number(c.saldo).toLocaleString('es-CO')}'">Saldo total</button>
-    <a class="btn dark sm" target="_blank" href="${wa(c.contacto.telefono, msj)}">Recordatorio WhatsApp</a></div></div>` : ''}
-  <div class="row mt"><label style="margin:0">Cobrador</label><select id="cb_s" style="max-width:240px">${cobs}</select>${c.estado === 'Activo' && !c.pagado ? `<button class="btn bad sm" id="an_b">Anular crédito</button>` : ''}</div>
+    <a class="btn dark sm" target="_blank" href="${wa(c.contacto.telefono, msj)}">Recordatorio WhatsApp</a><button class="btn ghost sm" onclick="refinanciar('${c.id}')">Refinanciar</button></div></div>` : ''}
+  <div class="row mt"><label style="margin:0">Cobrador</label><select id="cb_s" style="max-width:240px">${cobs}</select>${c.estado === 'Activo' && !c.pagado && !c.creditoOrigen ? `<button class="btn bad sm" id="an_b">Anular crédito</button>` : ''}</div>
   <h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">PLAN DE CUOTAS</h3>${tablaCuotas(c.cuotas, D.hoy)}
   ${c.pagos.length ? `<h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">PAGOS</h3>` + c.pagos.map(p => `<div class="row between small" style="padding:7px 0;border-bottom:1px solid var(--line)"><span>${p.fecha} · ${esc(p.medio)} · ${esc(p.registro)}</span><span>${money(p.valor)} <span class="chip ${p.estado === 'Aplicado' ? 'c-ok' : p.estado === 'Rechazado' ? 'c-bad' : 'c-warn'}">${p.estado}</span></span></div>`).join('') : ''}
   ${c.gestiones.length ? `<h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">GESTIONES DE COBRO</h3>` + c.gestiones.map(g => `<div class="small" style="padding:7px 0;border-bottom:1px solid var(--line)"><b>${esc(g.resultado)}</b> · ${g.fecha}${g.compromiso ? ' · compromiso ' + g.compromiso : ''}<div class="mut">${esc(g.nota)}</div></div>`).join('') : ''}`);

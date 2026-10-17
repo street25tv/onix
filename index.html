@@ -103,6 +103,8 @@ hr{border:none;border-top:1px solid var(--line);margin:16px 0}
 .score{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
 .sc-verde{background:var(--okDim);color:var(--ok);border:2px solid var(--ok)}
 .sc-amarillo{background:var(--warnDim);color:var(--warn);border:2px solid var(--warn)}
+.refires{background:radial-gradient(400px 160px at 50% 0,rgba(201,169,97,.16),transparent),var(--bg);border:1px solid var(--gold);border-radius:16px;padding:16px;text-align:center;margin-top:14px}
+.chip.c-refi{background:rgba(120,150,255,.14);color:#9fb4ff}
 .sc-rojo{background:var(--badDim);color:var(--bad);border:2px solid var(--bad)}
 </style>
 
@@ -178,10 +180,12 @@ function chipSit(s, atraso) {
   if (s === 'En mora') return '<span class="chip c-bad">Mora ' + atraso + 'd</span>';
   if (s === 'Al día') return '<span class="chip c-ok">Al día</span>';
   if (s === 'Pagado') return '<span class="chip c-gold">Pagado</span>';
+  if (s === 'Refinanciado') return '<span class="chip c-refi">Refinanciado</span>';
   return '<span class="chip c-mut">' + esc(s) + '</span>';
 }
 function chipCuota(q, hoy) {
   if (q.estado === 'Pagada') return '<span class="chip c-ok">Pagada</span>';
+  if (q.estado === 'Refinanciada') return '<span class="chip c-refi">Refinanciada</span>';
   if (q.fecha < hoy) return '<span class="chip c-bad">Vencida</span>';
   if (q.estado === 'Parcial') return '<span class="chip c-warn">Parcial</span>';
   if (q.fecha === hoy) return '<span class="chip c-warn">Hoy</span>';
@@ -194,6 +198,28 @@ function fechaBonita(s) {
 }
 function hoyLocal() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function wa(tel, txt) { let t = String(tel || '').replace(/\D/g, ''); if (t.length === 10) t = '57' + t; return 'https://wa.me/' + t + '?text=' + encodeURIComponent(txt || ''); }
+const FREC_TXT = { Diaria: 'diaria', Semanal: 'semanal', Quincenal: 'quincenal', Mensual: 'mensual' };
+function refiHTML(r) {
+  const s = r.simulacion, a = r.actual, b = r.base;
+  const dif = a.cuotaMensual - s.cuotaMensual;
+  return '<div class="refires"><div class="small mut">Nueva cuota ' + FREC_TXT[s.frecuencia] + '</div><div class="big">' + money(s.cuota) + '</div>' +
+    '<div class="small mut">' + s.n + ' cuotas · total ' + money(s.total) + '</div></div>' +
+    '<div class="tw mt"><table><thead><tr><th></th><th class="num">Actual</th><th class="num">Refinanciado</th></tr></thead><tbody>' +
+    '<tr><td>Saldo</td><td class="num">' + money(a.saldo) + '</td><td class="num"><b>' + money(s.total) + '</b></td></tr>' +
+    '<tr><td>Cuota</td><td class="num">' + money(a.valorCuota) + ' ' + FREC_TXT[a.frecuencia] + '</td><td class="num"><b>' + money(s.cuota) + ' ' + FREC_TXT[s.frecuencia] + '</b></td></tr>' +
+    '<tr><td>Equivale al mes</td><td class="num">' + money(a.cuotaMensual) + '</td><td class="num"><b>' + money(s.cuotaMensual) + '</b></td></tr>' +
+    '<tr><td>Cuotas por pagar</td><td class="num">' + a.cuotasRestantes + '</td><td class="num"><b>' + s.n + '</b></td></tr>' +
+    '<tr><td>Días de atraso</td><td class="num">' + a.diasAtraso + '</td><td class="num"><b>0</b></td></tr></tbody></table></div>' +
+    '<div class="small mt" style="line-height:1.85"><b style="color:var(--gold)">Cómo se calcula</b><br>' +
+    'Capital pendiente <b>' + money(b.capitalPendiente) + '</b>' + (b.adicional ? ' + dinero adicional <b>' + money(b.adicional) + '</b>' : '') +
+    ' → interés ' + s.tasa + '% × ' + s.meses + (s.meses == 1 ? ' mes' : ' meses') + ' = <b>' + money(s.interesNuevo) + '</b><br>' +
+    (b.interesVencido ? 'Interés vencido sin pagar (se traslada sin generar más interés): <b>' + money(b.interesVencido) + '</b><br>' : '') +
+    (b.comision ? 'Comisión de refinanciación: <b>' + money(b.comision) + '</b><br>' : '') +
+    '<span style="color:var(--ok)">Interés futuro que se descuenta: <b>' + money(b.interesCondonado) + '</b></span><br>' +
+    (dif > 0 ? '<span style="color:var(--ok)">La cuota mensual baja ' + money(dif) + ' (' + Math.round(dif / (a.cuotaMensual || 1) * 100) + '%)</span>'
+             : '<span style="color:var(--warn)">La cuota mensual sube ' + money(-dif) + '</span>') + '</div>';
+}
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 function tablaCuotas(cuotas, hoy) {
   return '<div class="tw" style="max-height:340px;overflow:auto"><table><thead><tr><th>#</th><th>Vence</th><th class="num">Cuota</th><th class="num">Abonado</th><th>Estado</th></tr></thead><tbody>' +
     cuotas.map(q => '<tr><td>' + q.n + '</td><td>' + fechaBonita(q.fecha) + '</td><td class="num">' + money(q.valor) + '</td><td class="num">' + money(q.pagado) + '</td><td>' + chipCuota(q, hoy) + (q.atraso ? ' <span class="small mut">+' + q.atraso + 'd</span>' : '') + '</td></tr>').join('') +
@@ -313,11 +339,11 @@ function pintarConsulta() {
       <div class="row between small mut mt"><span>${c.cuotasPagadas} de ${c.numCuotas} cuotas</span><span>${c.avance}%</span></div>
       <div class="bar mt" style="margin-top:6px"><i style="width:${c.avance}%"></i></div>
       <div class="row mt">${c.estado === 'Activo' ? `<button class="btn sm" onclick="reportar('${c.id}')">Reportar pago</button>` : ''}
-        <button class="btn ghost sm" onclick="plan('${c.id}')">Plan de pagos</button></div>
+        <button class="btn ghost sm" onclick="plan('${c.id}')">Plan de pagos</button>${c.estado === 'Activo' ? `<button class="btn dark sm" onclick="refinanciar('${c.id}')">Refinanciar</button>` : ''}</div>
     </div>`;
   });
   if (d.solicitudes.length) {
-    h += `<div class="card"><h3>Mis solicitudes</h3>` + d.solicitudes.map(s => `<div class="row between" style="padding:8px 0;border-bottom:1px solid var(--line)"><div><b>${money(s.monto)}</b> <span class="small mut">· ${s.meses}m · ${s.frecuencia} · ${s.fecha}</span>${s.respuesta && s.estado === 'Rechazada' ? `<div class="small mut">${esc(s.respuesta)}</div>` : ''}</div>
+    h += `<div class="card"><h3>Mis solicitudes</h3>` + d.solicitudes.map(s => `<div class="row between" style="padding:8px 0;border-bottom:1px solid var(--line)"><div>${s.tipo === 'Refinanciación' ? '<span class="chip c-refi">Refinanciación</span> ' : ''}<b>${money(s.monto)}</b> <span class="small mut">· ${s.meses}m · ${s.frecuencia} · ${s.fecha}</span>${s.respuesta && s.estado === 'Rechazada' ? `<div class="small mut">${esc(s.respuesta)}</div>` : ''}</div>
       <span class="chip ${s.estado === 'Aprobada' ? 'c-ok' : s.estado === 'Rechazada' ? 'c-bad' : 'c-warn'}">${s.estado === 'Pendiente' ? 'En estudio' : s.estado}</span></div>`).join('') + `</div>`;
   }
   $('#app').innerHTML = h;
@@ -327,6 +353,37 @@ function plan(id) {
   const c = consulta.data.creditos.find(x => x.id === id);
   modal(`<h2>Plan de pagos</h2><p class="mut small mb">${c.id} · Total ${money(c.total)} · Interés ${money(c.interes)}</p>${tablaCuotas(c.cuotas, hoyLocal())}
     ${c.pagos.length ? `<h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">PAGOS</h3>` + c.pagos.map(p => `<div class="row between small" style="padding:7px 0;border-bottom:1px solid var(--line)"><span>${p.fecha} · ${esc(p.medio)}</span><span>${money(p.valor)} ${p.estado !== 'Aplicado' ? `<span class="chip ${p.estado === 'Rechazado' ? 'c-bad' : 'c-warn'}">${p.estado}</span>` : ''}</span></div>`).join('') : ''}`);
+}
+
+function refinanciar(id) {
+  const c = consulta.data.creditos.find(x => x.id === id);
+  const R = { meses: Math.min(P.refiMaxMeses, Math.max(2, c.meses)), frec: c.frecuencia, adic: 0 };
+  modal(`<h2>Simular refinanciación</h2><p class="mut small">${c.id} · saldo ${money(c.saldo)} · cuota ${money(c.valorCuota)} ${FREC_TXT[c.frecuencia]}${c.diasAtraso ? ' · ' + c.diasAtraso + ' días de atraso' : ''}</p>
+    <label>Nuevo plazo</label><select id="rf_m">${Array.from({ length: P.refiMaxMeses }, (_, i) => i + 1).map(m => `<option value="${m}" ${m == R.meses ? 'selected' : ''}>${m} ${m == 1 ? 'mes' : 'meses'}</option>`).join('')}</select>
+    <label>¿Cada cuánto pagarías?</label><div class="pills" id="rf_f">${P.frecuencias.map(f => `<button data-f="${f}" class="${f === R.frec ? 'on' : ''}">${f}</button>`).join('')}</div>
+    <div class="grid g2 st"><div><label>Dinero adicional (opcional)</label><input id="rf_a" inputmode="numeric" placeholder="$0"></div>
+    <div><label>Tus ingresos mensuales hoy</label><input id="rf_i" inputmode="numeric" placeholder="$"></div></div>
+    <div id="rf_res">${LOADING}</div>
+    <label>¿Por qué necesitas refinanciar?</label><input id="rf_mo" placeholder="Ej: bajaron mis ventas este mes">
+    <button class="btn full mt" id="rf_b">Solicitar refinanciación</button>
+    <p class="small mut mt" style="text-align:center">La simulación no es una aprobación. Un analista revisará tu solicitud.</p>`);
+  const fmtIn = e => { const n = e.target.value.replace(/\D/g, ''); e.target.value = n ? Number(n).toLocaleString('es-CO') : ''; };
+  const sim = debounce(async () => {
+    $('#rf_res').innerHTML = LOADING;
+    try { const r = await api('clienteSimularRefi', consulta.doc, consulta.ult4, id, R.meses, R.frec, R.adic); $('#rf_res').innerHTML = refiHTML(r); }
+    catch (e) { $('#rf_res').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+  }, 450);
+  $('#rf_m').onchange = e => { R.meses = +e.target.value; sim(); };
+  document.querySelectorAll('#rf_f button').forEach(b => b.onclick = () => { R.frec = b.dataset.f; document.querySelectorAll('#rf_f button').forEach(x => x.className = x === b ? 'on' : ''); sim(); });
+  $('#rf_a').oninput = e => { fmtIn(e); R.adic = +e.target.value.replace(/\D/g, '') || 0; sim(); };
+  $('#rf_i').oninput = fmtIn;
+  $('#rf_b').onclick = e => conBoton(e.currentTarget, async () => {
+    if (!$('#rf_i').value) throw new Error('Indica tus ingresos mensuales actuales');
+    const r = await api('clienteSolicitarRefi', consulta.doc, consulta.ult4, id, R.meses, R.frec, R.adic, $('#rf_mo').value, $('#rf_i').value.replace(/\D/g, ''));
+    consulta.data = await api('consultar', consulta.doc, consulta.ult4);
+    modal(`<div style="text-align:center;padding:20px 0"><h2>Solicitud enviada</h2><p class="mut">Radicado <b style="color:var(--gold2)">${r.id}</b>. Revisaremos tu refinanciación y te contactaremos por WhatsApp. Mientras tanto tu crédito actual sigue vigente.</p><button class="btn mt" onclick="cerrarModal();pintarConsulta()">Entendido</button></div>`);
+  });
+  sim();
 }
 
 function reportar(id) {
