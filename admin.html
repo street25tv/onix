@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ÓNIX Capital · Admin</title>
+<meta name="theme-color" content="#0b0b0d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0d; --bg2:#121215; --card:#17171c; --card2:#1e1e24; --line:#2a2a32;
+  --gold:#c9a961; --gold2:#e6cf94; --goldDim:rgba(201,169,97,.14);
+  --txt:#f1ede4; --mut:#9b978e; --ok:#4fbf8b; --okDim:rgba(79,191,139,.14);
+  --warn:#e3b04b; --warnDim:rgba(227,176,75,.14); --bad:#e0645c; --badDim:rgba(224,100,92,.14);
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;background:radial-gradient(1200px 500px at 50% -200px,rgba(201,169,97,.10),transparent 70%),var(--bg)}
+a{color:var(--gold)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 80px}
+.narrow{max-width:560px}
+/* Marca */
+.brand{display:flex;align-items:center;gap:12px}
+.gem{width:38px;height:38px;flex:none}
+.brand b{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;letter-spacing:.18em;color:var(--txt)}
+.brand b span{color:var(--gold)}
+.brand b{white-space:nowrap}
+.brand small{white-space:nowrap;display:block;font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);margin-top:-2px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 0;border-bottom:1px solid var(--line);margin-bottom:22px;position:sticky;top:0;background:rgba(11,11,13,.92);backdrop-filter:blur(10px);z-index:20}
+header.top{flex-wrap:wrap}
+@media(max-width:520px){.brand b{font-size:19px;letter-spacing:.12em}.brand small{font-size:9px;letter-spacing:.2em}.gem{width:32px;height:32px}header.top .row{flex-wrap:nowrap}}
+/* Tarjetas */
+.card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card h3{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:12px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:820px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.g2.st,.g3.st{grid-template-columns:1fr}}
+.kpi{padding:16px}
+.kpi .l{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.kpi .v{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--mut);margin-top:2px}
+.kpi.gold .v{color:var(--gold2)}
+/* Formularios */
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 5px;letter-spacing:.03em}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:11px;padding:12px 13px;font:inherit;outline:none;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+input[type=range]{padding:0;height:6px;accent-color:var(--gold);background:transparent;border:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--gold);background:linear-gradient(180deg,var(--gold2),var(--gold));color:#141210;font-weight:700;border-radius:12px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;transition:filter .15s,transform .05s}
+.btn:hover{filter:brightness(1.07)}.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--gold)}
+.btn.dark{background:var(--card2);border-color:var(--line);color:var(--txt)}
+.btn.bad{background:transparent;border-color:var(--bad);color:var(--bad)}
+.btn.okb{background:var(--ok);border-color:var(--ok);color:#06140d}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:9px}
+.btn.full{width:100%}
+.btn:disabled{opacity:.5;cursor:wait}
+/* Tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;scrollbar-width:none}
+.tabs button{flex:none;background:transparent;border:1px solid var(--line);color:var(--mut);padding:9px 15px;border-radius:999px;font:inherit;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:var(--goldDim);border-color:var(--gold);color:var(--gold2)}
+.tabs .cnt{background:var(--gold);color:#111;border-radius:999px;padding:0 7px;font-size:11px;margin-left:6px;font-weight:700}
+/* Tablas */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:600;color:var(--mut);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;padding:11px 12px;background:var(--bg2);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.click{cursor:pointer}tr.click:hover td{background:rgba(255,255,255,.025)}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Chips */
+.chip{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.c-ok{background:var(--okDim);color:var(--ok)}.c-warn{background:var(--warnDim);color:var(--warn)}
+.c-bad{background:var(--badDim);color:var(--bad)}.c-gold{background:var(--goldDim);color:var(--gold2)}
+.c-mut{background:rgba(255,255,255,.06);color:var(--mut)}
+.mut{color:var(--mut)}.small{font-size:12.5px}.right{text-align:right}.mt{margin-top:14px}.mb{margin-bottom:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+.bar{height:7px;background:var(--line);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.big{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;color:var(--gold2);line-height:1.05}
+.serif{font-family:'Cormorant Garamond',serif}
+hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+/* Modal y toast */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:0}
+@media(min-width:700px){.ov{align-items:center;padding:20px}}
+.md{background:var(--card);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:720px;max-height:92vh;overflow:auto;padding:20px}
+@media(min-width:700px){.md{border-radius:20px}}
+.md h2{font-family:'Cormorant Garamond',serif;font-size:26px;margin-bottom:4px}
+.x{float:right;background:none;border:none;color:var(--mut);font-size:26px;cursor:pointer;line-height:1}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--gold);color:var(--txt);padding:12px 18px;border-radius:12px;z-index:99;display:none;max-width:90vw;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#toast.err{border-color:var(--bad)}
+.load{display:flex;justify-content:center;padding:50px}
+.spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{padding:30px;text-align:center;color:var(--mut)}
+.login{max-width:380px;margin:12vh auto 0;text-align:center}
+.login .brand{justify-content:center;margin-bottom:26px}
+.pin{letter-spacing:.6em;text-align:center;font-size:22px}
+.list{display:grid;gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.item.alert{border-left:3px solid var(--bad)}.item.due{border-left:3px solid var(--warn)}.item.okk{border-left:3px solid var(--ok)}
+.score{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+.sc-verde{background:var(--okDim);color:var(--ok);border:2px solid var(--ok)}
+.sc-amarillo{background:var(--warnDim);color:var(--warn);border:2px solid var(--warn)}
+.sc-rojo{background:var(--badDim);color:var(--bad);border:2px solid var(--bad)}
+</style>
+
+<style>
+.chart{display:flex;align-items:flex-end;gap:3px;height:140px;padding-top:10px}
+.chart div{flex:1;background:linear-gradient(180deg,var(--gold2),var(--gold));border-radius:3px 3px 0 0;min-height:2px;position:relative;opacity:.9}
+.chart div:hover{opacity:1}
+.chart div:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--line);padding:4px 8px;border-radius:6px;font-size:11px;white-space:nowrap;margin-bottom:4px;z-index:2}
+.sim{background:var(--bg);border:1px dashed var(--gold);border-radius:12px;padding:12px;margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px;color:var(--mut)}
+.sim b{display:block;color:var(--txt);font-size:15px}
+@media(max-width:520px){.sim{grid-template-columns:repeat(2,1fr)}}
+.motivos{font-size:12.5px;color:var(--mut);margin-top:8px;padding-left:16px}
+.motivos li{margin:2px 0}
+</style>
+</head>
+<body data-marca="ÓNIX Capital">
+<div class="wrap">
+  <div id="app"></div>
+</div>
+<div id="toast"></div>
+<script>
+const $ = s => document.querySelector(s);
+const money = v => '$' + Math.round(Number(v) || 0).toLocaleString('es-CO');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const GEM = '<svg class="gem" viewBox="0 0 40 40"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6cf94"/><stop offset="1" stop-color="#9c7d3c"/></linearGradient></defs><polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#121215" stroke="url(#gg)" stroke-width="1.6"/><polygon points="20,9 29,14 29,26 20,31 11,26 11,14" fill="none" stroke="url(#gg)" stroke-width="1" opacity=".55"/><polygon points="20,9 29,14 20,20 11,14" fill="url(#gg)" opacity=".85"/></svg>';
+function brandHTML(nombre, sub) {
+  const n = String(nombre || 'ÓNIX Capital').split(' ');
+  return '<div class="brand">' + GEM + '<div><b>' + esc(n[0].toUpperCase()) + (n.length > 1 ? ' <span>' + esc(n.slice(1).join(' ').toUpperCase()) + '</span>' : '') + '</b><small>' + esc(sub || '') + '</small></div></div>';
+}
+const API_URL = 'https://script.google.com/macros/s/AKfycbyeZ1O-2ma_xIF82IF8FTgH7N6uj3y97PY2pDFQhWkrj-qBA-tZ4d7C7op2BLyL_cvyUA/exec';
+const BASE_URL = location.href.split('?')[0].replace(/[^/]*$/, '');
+async function api(fn, ...args) {
+  let j;
+  try {
+    const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args }) });
+    j = await r.json();
+  } catch (e) { throw new Error('Sin conexión con el servidor. Intenta de nuevo.'); }
+  if (!j.ok) {
+    const m = j.error || 'Error';
+    if (m.indexOf('SESION') >= 0 && window.onSesionExpirada) window.onSesionExpirada();
+    throw new Error(m.replace(/^.*SESION:\s*/, ''));
+  }
+  return j.data;
+}
+let _tt;
+function toast(msg, err) {
+  const t = $('#toast'); t.textContent = msg; t.className = err ? 'err' : ''; t.style.display = 'block';
+  clearTimeout(_tt); _tt = setTimeout(() => t.style.display = 'none', 3800);
+}
+function modal(html) {
+  cerrarModal();
+  const o = document.createElement('div'); o.className = 'ov'; o.id = 'ov';
+  o.innerHTML = '<div class="md"><button class="x" onclick="cerrarModal()">×</button>' + html + '</div>';
+  o.addEventListener('click', e => { if (e.target === o) cerrarModal(); });
+  document.body.appendChild(o);
+}
+function cerrarModal() { const o = $('#ov'); if (o) o.remove(); }
+const LOADING = '<div class="load"><div class="spin"></div></div>';
+function store(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { return null; } }
+async function conBoton(btn, fn) {
+  const t = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spin" style="width:16px;height:16px;border-width:2px"></span>';
+  try { return await fn(); } catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.innerHTML = t; }
+}
+function chipSit(s, atraso) {
+  if (s === 'En mora') return '<span class="chip c-bad">Mora ' + atraso + 'd</span>';
+  if (s === 'Al día') return '<span class="chip c-ok">Al día</span>';
+  if (s === 'Pagado') return '<span class="chip c-gold">Pagado</span>';
+  return '<span class="chip c-mut">' + esc(s) + '</span>';
+}
+function chipCuota(q, hoy) {
+  if (q.estado === 'Pagada') return '<span class="chip c-ok">Pagada</span>';
+  if (q.fecha < hoy) return '<span class="chip c-bad">Vencida</span>';
+  if (q.estado === 'Parcial') return '<span class="chip c-warn">Parcial</span>';
+  if (q.fecha === hoy) return '<span class="chip c-warn">Hoy</span>';
+  return '<span class="chip c-mut">Pendiente</span>';
+}
+function fechaBonita(s) {
+  if (!s) return '';
+  const d = new Date(s.slice(0, 10) + 'T12:00:00');
+  return d.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+function hoyLocal() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function wa(tel, txt) { let t = String(tel || '').replace(/\D/g, ''); if (t.length === 10) t = '57' + t; return 'https://wa.me/' + t + '?text=' + encodeURIComponent(txt || ''); }
+function tablaCuotas(cuotas, hoy) {
+  return '<div class="tw" style="max-height:340px;overflow:auto"><table><thead><tr><th>#</th><th>Vence</th><th class="num">Cuota</th><th class="num">Abonado</th><th>Estado</th></tr></thead><tbody>' +
+    cuotas.map(q => '<tr><td>' + q.n + '</td><td>' + fechaBonita(q.fecha) + '</td><td class="num">' + money(q.valor) + '</td><td class="num">' + money(q.pagado) + '</td><td>' + chipCuota(q, hoy) + (q.atraso ? ' <span class="small mut">+' + q.atraso + 'd</span>' : '') + '</td></tr>').join('') +
+    '</tbody></table></div>';
+}
+</script>
+
+<script>
+let T = store('onix_admin'), D = null, TAB = store('onix_tab') || 'tablero', FILTRO = 'activos', BUSCA = '';
+window.onSesionExpirada = () => { store('onix_admin', null); T = null; pintarLogin(); };
+
+function pintarLogin() {
+  $('#app').innerHTML = `<div class="login">${brandHTML(document.body.dataset.marca, 'Panel de crédito')}
+    <div class="card"><label>PIN de administrador</label><input id="pin" type="password" inputmode="numeric" class="pin" autofocus>
+    <button class="btn full mt" id="lb">Ingresar</button></div></div>`;
+  const go = e => conBoton($('#lb'), async () => { const r = await api('login', 'admin', $('#pin').value); T = r.token; store('onix_admin', T); cargar(); });
+  $('#lb').onclick = go; $('#pin').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+
+async function cargar(silencioso) {
+  if (!silencioso) $('#app').innerHTML = LOADING;
+  try { D = await api('adminPanel', T); pintar(); } catch (e) { if (T) $('#app').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+}
+
+function calc(capital, meses, frec, tasa) {
+  const C = D.config; tasa = tasa === '' || tasa == null ? C.tasa : +tasa;
+  const n = Math.max(1, Math.round(meses * (C.porMes[frec] || 1)));
+  const interes = Math.round(capital * tasa / 100 * meses), total = capital + interes;
+  let cuota = Math.round(total / n / C.redondeo) * C.redondeo, ultima = total - cuota * (n - 1);
+  if (cuota <= 0 || ultima <= 0 || ultima > cuota * 1.5) cuota = Math.ceil(total / n);
+  return { n, interes, total, cuota, mensual: Math.round(total / meses) };
+}
+
+function pintar() {
+  const k = D.kpi;
+  const tabs = [['tablero', 'Tablero'], ['solicitudes', 'Solicitudes', k.solicitudes], ['creditos', 'Créditos'], ['pagos', 'Pagos', k.porVerificar], ['cobradores', 'Cobradores'], ['caja', 'Caja']];
+  $('#app').innerHTML = `<header class="top">${brandHTML(D.config.nombre, 'Panel de crédito')}
+    <div class="row"><button class="btn sm" onclick="nuevoCredito()">+ Nuevo crédito</button><button class="btn dark sm" onclick="cargar()" title="Actualizar">↻</button><button class="btn dark sm" onclick="salir()">Salir</button></div></header>
+    <div class="tabs">${tabs.map(t => `<button class="${TAB === t[0] ? 'on' : ''}" onclick="irTab('${t[0]}')">${t[1]}${t[2] ? `<span class="cnt">${t[2]}</span>` : ''}</button>`).join('')}</div>
+    <div id="body"></div>`;
+  ({ tablero, solicitudes, creditos, pagos, cobradores, caja })[TAB]();
+}
+function irTab(t) { TAB = t; store('onix_tab', t); pintar(); }
+async function salir() { try { await api('logout', T); } catch (e) {} store('onix_admin', null); T = null; pintarLogin(); }
+
+/* ---------------- TABLERO ---------------- */
+function tablero() {
+  const k = D.kpi, max = Math.max(1, ...D.serie.map(s => s.v));
+  const mora = D.creditos.filter(c => c.situacion === 'En mora').sort((a, b) => b.diasAtraso - a.diasAtraso).slice(0, 8);
+  $('#body').innerHTML = `
+  <div class="grid g4">
+    ${kpi('Cartera activa', money(k.cartera), k.activos + ' créditos', 'gold')}
+    ${kpi('Por cobrar hoy', money(k.exigibleHoy), 'cuotas vencidas + hoy')}
+    ${kpi('Recaudo hoy', money(k.recaudoHoy), 'Mes: ' + money(k.recaudoMes))}
+    ${kpi('Índice de mora', k.pctMora + '%', k.enMora + ' créditos · ' + money(k.saldoMora))}
+    ${kpi('Colocado este mes', money(k.colocadoMes), 'capital desembolsado')}
+    ${kpi('Interés por cobrar', money(k.interesPorCobrar), 'ganancia en cartera', 'gold')}
+    ${kpi('Saldo en caja', money(k.saldoCaja), 'disponible para prestar')}
+    ${kpi('Por entregar cobradores', money(k.pendienteEntrega), 'efectivo en la calle')}
+  </div>
+  <div class="grid g2 st mt">
+    <div class="card"><h3>Recaudo · últimos 30 días</h3><div class="chart">${D.serie.map(s => `<div style="height:${Math.round(s.v / max * 100)}%" data-t="${fechaBonita(s.d)}: ${money(s.v)}"></div>`).join('')}</div>
+      <div class="row between small mut" style="margin-top:6px"><span>${fechaBonita(D.serie[0].d)}</span><span>Hoy</span></div></div>
+    <div class="card"><h3>Mayor mora</h3>${mora.length ? mora.map(c => `<div class="row between click" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="detalle('${c.id}')"><div><b>${esc(c.cliente)}</b><div class="small mut">${c.id} · ${esc(c.cobrador || 'Sin cobrador')}</div></div><div class="right">${chipSit(c.situacion, c.diasAtraso)}<div class="small">${money(c.exigible)}</div></div></div>`).join('') : '<div class="empty">Sin créditos en mora 🎉</div>'}</div>
+  </div>
+  <div class="card mt"><h3>Rendimiento de cobradores</h3>${tablaCuadre()}</div>`;
+}
+function kpi(l, v, s, cl) { return `<div class="card kpi ${cl || ''}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s || ''}</div></div>`; }
+
+/* ---------------- SOLICITUDES ---------------- */
+function solicitudes() {
+  if (!D.solicitudes.length) { $('#body').innerHTML = '<div class="card empty">No hay solicitudes pendientes.</div>'; return; }
+  $('#body').innerHTML = '<div class="list">' + D.solicitudes.map(s => {
+    const a = s.analisis;
+    return `<div class="card"><div class="row" style="align-items:flex-start;gap:16px">
+      <div class="score sc-${a.semaforo}">${a.score}</div>
+      <div style="flex:1;min-width:220px">
+        <div class="row between"><div><b style="font-size:17px">${esc(s.nombre)}</b> <span class="small mut">CC ${esc(s.documento)} · ${s.id} · ${s.fecha}</span></div>
+        <span class="chip ${a.semaforo === 'verde' ? 'c-ok' : a.semaforo === 'amarillo' ? 'c-warn' : 'c-bad'}">${a.recomendacion}</span></div>
+        <div class="grid g4 mt small">
+          <div><span class="mut">Solicita</span><br><b>${money(s.monto)}</b> · ${s.meses}m · ${s.frecuencia}</div>
+          <div><span class="mut">Cuota ${s.frecuencia.toLowerCase()}</span><br><b>${money(a.simulacion.cuota)}</b> × ${a.simulacion.n}</div>
+          <div><span class="mut">Ingresos / cuota mes</span><br><b>${money(s.ingresos)}</b> · ${a.ratio}%</div>
+          <div><span class="mut">Monto sugerido</span><br><b>${money(a.montoSugerido)}</b></div>
+        </div>
+        <ul class="motivos">${a.motivos.map(m => `<li>${esc(m)}</li>`).join('')}</ul>
+        <div class="small mut mt">${esc(s.ocupacion)} · ${esc(s.direccion)} ${esc(s.barrio)} · Destino: ${esc(s.destino || '—')} · Ref: ${esc(s.referencia || '—')} ${esc(s.telReferencia || '')}</div>
+        <div class="row mt"><button class="btn sm" onclick="aprobar('${s.id}')">Aprobar y desembolsar</button>
+          <button class="btn bad sm" onclick="rechazar('${s.id}')">Rechazar</button>
+          <a class="btn dark sm" target="_blank" href="${wa(s.telefono, 'Hola ' + s.nombre.split(' ')[0] + ', te escribimos de ' + D.config.nombre + ' sobre tu solicitud de crédito ' + s.id + '.')}">WhatsApp</a></div>
+      </div></div></div>`;
+  }).join('') + '</div>';
+}
+
+function formParams(pre) {
+  const opts = D.config.frecuencias.map(f => `<option ${f === pre.frecuencia ? 'selected' : ''}>${f}</option>`).join('');
+  const cobs = '<option value="">— Sin asignar —</option>' + D.cobradores.filter(c => c.activo).map(c => `<option value="${c.id}">${esc(c.nombre)} · ${esc(c.zona || '')}</option>`).join('');
+  return `<div class="grid g3 st">
+    <div><label>Capital</label><input id="p_cap" inputmode="numeric" value="${Number(pre.capital || 0).toLocaleString('es-CO')}"></div>
+    <div><label>Meses</label><input id="p_mes" type="number" min="1" value="${pre.meses || 1}"></div>
+    <div><label>Frecuencia</label><select id="p_fre">${opts}</select></div>
+    <div><label>Tasa mensual %</label><input id="p_tas" type="number" step="0.1" value="${D.config.tasa}"></div>
+    <div><label>Fecha desembolso</label><input id="p_des" type="date" value="${D.hoy}"></div>
+    <div><label>Primera cuota (opcional)</label><input id="p_pri" type="date"></div>
+    <div style="grid-column:1/-1"><label>Cobrador</label><select id="p_cob">${cobs}</select></div>
+  </div><div class="sim" id="p_sim"></div>`;
+}
+function bindParams() {
+  const f = () => {
+    const cap = +$('#p_cap').value.replace(/\D/g, ''), mes = +$('#p_mes').value || 1;
+    const c = calc(cap, mes, $('#p_fre').value, $('#p_tas').value);
+    $('#p_sim').innerHTML = `<div>Cuota<b>${money(c.cuota)}</b></div><div>Nº cuotas<b>${c.n}</b></div><div>Interés<b>${money(c.interes)}</b></div><div>Total<b>${money(c.total)}</b></div>`;
+  };
+  ['p_cap', 'p_mes', 'p_fre', 'p_tas'].forEach(id => $('#' + id).addEventListener('input', f));
+  $('#p_cap').addEventListener('input', e => { const n = e.target.value.replace(/\D/g, ''); e.target.value = n ? Number(n).toLocaleString('es-CO') : ''; });
+  f();
+}
+function leerParams() {
+  return { capital: $('#p_cap').value.replace(/\D/g, ''), meses: $('#p_mes').value, frecuencia: $('#p_fre').value, tasa: $('#p_tas').value,
+    fechaDesembolso: $('#p_des').value, primeraCuota: $('#p_pri').value, cobradorId: $('#p_cob').value };
+}
+
+function aprobar(id) {
+  const s = D.solicitudes.find(x => x.id === id);
+  modal(`<h2>Aprobar crédito</h2><p class="mut small">${esc(s.nombre)} · score ${s.analisis.score} · sugerido ${money(s.analisis.montoSugerido)}</p>
+    ${formParams({ capital: s.monto, meses: s.meses, frecuencia: s.frecuencia })}
+    <p class="small mut mt">Al aprobar se crea el cliente, el plan de cuotas y se registra el desembolso en caja.</p>
+    <button class="btn full mt" id="ap_btn">Aprobar y desembolsar</button>`);
+  bindParams();
+  $('#ap_btn').onclick = e => conBoton(e.currentTarget, async () => {
+    const cid = await api('adminAprobar', T, id, leerParams());
+    cerrarModal(); toast('Crédito ' + cid + ' creado'); await cargar(true); detalle(cid);
+  });
+}
+function rechazar(id) {
+  modal(`<h2>Rechazar solicitud</h2><label>Motivo (lo verá el cliente)</label><textarea id="rz" rows="3">No cumple con la capacidad de pago requerida en este momento.</textarea>
+    <button class="btn bad full mt" id="rz_b">Rechazar</button>`);
+  $('#rz_b').onclick = e => conBoton(e.currentTarget, async () => { await api('adminRechazar', T, id, $('#rz').value); cerrarModal(); toast('Solicitud rechazada'); cargar(true); });
+}
+
+function nuevoCredito() {
+  modal(`<h2>Nuevo crédito</h2><p class="mut small">Cliente nuevo o existente (se reconoce por la cédula).</p>
+  <div class="grid g3 st">
+    <div><label>Cédula *</label><input id="n_doc" inputmode="numeric"></div><div><label>Nombre *</label><input id="n_nom"></div><div><label>Celular *</label><input id="n_tel" inputmode="tel"></div>
+    <div><label>Dirección</label><input id="n_dir"></div><div><label>Barrio</label><input id="n_bar"></div><div><label>Ocupación</label><input id="n_ocu"></div>
+    <div><label>Ingresos mensuales</label><input id="n_ing" inputmode="numeric"></div><div><label>Referencia</label><input id="n_ref"></div><div><label>Cel. referencia</label><input id="n_tre"></div>
+  </div><hr>${formParams({ capital: 500000, meses: 2, frecuencia: 'Diaria' })}
+  <label>Notas</label><input id="n_not">
+  <button class="btn full mt" id="n_btn">Crear y desembolsar</button>`);
+  bindParams();
+  $('#n_btn').onclick = e => conBoton(e.currentTarget, async () => {
+    const d = Object.assign({ documento: $('#n_doc').value, nombre: $('#n_nom').value.trim(), telefono: $('#n_tel').value, direccion: $('#n_dir').value,
+      barrio: $('#n_bar').value, ocupacion: $('#n_ocu').value, ingresos: $('#n_ing').value.replace(/\D/g, ''), referencia: $('#n_ref').value,
+      telReferencia: $('#n_tre').value, notas: $('#n_not').value }, leerParams());
+    if (!d.telefono) throw new Error('El celular es obligatorio');
+    const id = await api('adminCrearCredito', T, d);
+    cerrarModal(); toast('Crédito ' + id + ' creado'); await cargar(true); detalle(id);
+  });
+}
+
+/* ---------------- CRÉDITOS ---------------- */
+function creditos() {
+  const fs = [['activos', 'Activos'], ['mora', 'En mora'], ['aldia', 'Al día'], ['pagados', 'Pagados'], ['anulados', 'Anulados'], ['todos', 'Todos']];
+  $('#body').innerHTML = `<div class="row between mb"><div class="tabs" style="margin:0">${fs.map(f => `<button class="${FILTRO === f[0] ? 'on' : ''}" onclick="FILTRO='${f[0]}';creditos()">${f[1]}</button>`).join('')}</div>
+    <input id="bq" placeholder="Buscar nombre, cédula o ID" style="max-width:280px" value="${esc(BUSCA)}"></div><div id="tb"></div>`;
+  $('#bq').oninput = e => { BUSCA = e.target.value; tablaCreditos(); };
+  tablaCreditos();
+}
+function tablaCreditos() {
+  const q = BUSCA.toLowerCase();
+  const l = D.creditos.filter(c => ({
+    activos: c.estado === 'Activo', mora: c.situacion === 'En mora', aldia: c.situacion === 'Al día', pagados: c.estado === 'Pagado', anulados: c.estado === 'Anulado', todos: true
+  })[FILTRO]).filter(c => !q || (c.cliente + ' ' + c.documento + ' ' + c.id).toLowerCase().includes(q));
+  $('#tb').innerHTML = l.length ? `<div class="tw"><table><thead><tr><th>Crédito</th><th>Cliente</th><th class="num">Capital</th><th>Plan</th><th class="num">Saldo</th><th class="num">Exigible</th><th>Avance</th><th>Estado</th><th>Cobrador</th></tr></thead><tbody>
+    ${l.map(c => `<tr class="click" onclick="detalle('${c.id}')"><td><b>${c.id}</b><div class="small mut">${c.desembolso}</div></td><td>${esc(c.cliente)}<div class="small mut">CC ${esc(c.documento)}</div></td>
+      <td class="num">${money(c.capital)}</td><td class="small">${c.numCuotas} × ${money(c.valorCuota)}<div class="mut">${c.frecuencia} · ${c.meses}m · ${c.tasa}%</div></td>
+      <td class="num"><b>${money(c.saldo)}</b></td><td class="num">${c.exigible ? money(c.exigible) : '—'}</td>
+      <td style="min-width:90px"><div class="bar"><i style="width:${c.avance}%"></i></div><div class="small mut">${c.cuotasPagadas}/${c.numCuotas}</div></td>
+      <td>${chipSit(c.situacion, c.diasAtraso)}</td><td class="small">${esc(c.cobrador || '—')}</td></tr>`).join('')}</tbody></table></div>` : '<div class="card empty">Sin resultados</div>';
+}
+
+async function detalle(id) {
+  modal(LOADING);
+  let c;
+  try { c = await api('adminDetalle', T, id); } catch (e) { cerrarModal(); return toast(e.message, true); }
+  const sug = c.exigible > 0 ? c.exigible : (c.proxima ? c.proxima.valor : 0);
+  const msj = c.exigible > 0
+    ? `Hola ${c.cliente.split(' ')[0]}, te recordamos que tienes ${money(c.exigible)} pendientes en tu crédito ${c.id} con ${D.config.nombre}. Saldo total: ${money(c.saldo)}.`
+    : `Hola ${c.cliente.split(' ')[0]}, tu próxima cuota de ${money(sug)} vence el ${c.proxima ? fechaBonita(c.proxima.fecha) : ''}. ${D.config.nombre}.`;
+  const cobs = '<option value="">— Sin asignar —</option>' + D.cobradores.map(x => `<option value="${x.id}" ${x.id === c.cobradorId ? 'selected' : ''}>${esc(x.nombre)}</option>`).join('');
+  modal(`<h2>${esc(c.cliente)}</h2><div class="row between"><span class="mut small">${c.id} · CC ${esc(c.documento)} · desembolso ${c.desembolso}</span>${chipSit(c.situacion, c.diasAtraso)}</div>
+  <div class="grid g4 mt">${kpi('Saldo', money(c.saldo), 'de ' + money(c.total), 'gold')}${kpi('Exigible', money(c.exigible), c.cuotasVencidas + ' cuota(s) vencidas')}${kpi('Pagado', money(c.pagado), c.avance + '%')}${kpi('Cuota', money(c.valorCuota), c.frecuencia + ' · ' + c.numCuotas + ' cuotas')}</div>
+  <div class="small mut mt">📞 ${esc(c.contacto.telefono)} · 📍 ${esc(c.contacto.direccion)} ${esc(c.contacto.barrio)} · ${esc(c.contacto.ocupacion)} · Ref: ${esc(c.contacto.referencia)} ${esc(c.contacto.telReferencia)}</div>
+  <div class="small mut">Capital ${money(c.capital)} · Interés ${money(c.interes)} (${c.tasa}% × ${c.meses} meses)${c.notas ? ' · ' + esc(c.notas) : ''}</div>
+  ${c.estado === 'Activo' ? `<div class="card mt" style="padding:14px"><h3>Registrar pago</h3><div class="grid g3 st">
+    <div><label>Valor</label><input id="pg_v" inputmode="numeric" value="${Number(Math.min(sug, c.saldo)).toLocaleString('es-CO')}"></div>
+    <div><label>Medio</label><select id="pg_m"><option>Efectivo</option><option>Nequi</option><option>Daviplata</option><option>Transferencia</option></select></div>
+    <div><label>Observación</label><input id="pg_o"></div></div>
+    <div class="row mt"><button class="btn" id="pg_b">Registrar pago</button><button class="btn dark sm" onclick="$('#pg_v').value='${Number(c.saldo).toLocaleString('es-CO')}'">Saldo total</button>
+    <a class="btn dark sm" target="_blank" href="${wa(c.contacto.telefono, msj)}">Recordatorio WhatsApp</a></div></div>` : ''}
+  <div class="row mt"><label style="margin:0">Cobrador</label><select id="cb_s" style="max-width:240px">${cobs}</select>${c.estado === 'Activo' && !c.pagado ? `<button class="btn bad sm" id="an_b">Anular crédito</button>` : ''}</div>
+  <h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">PLAN DE CUOTAS</h3>${tablaCuotas(c.cuotas, D.hoy)}
+  ${c.pagos.length ? `<h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">PAGOS</h3>` + c.pagos.map(p => `<div class="row between small" style="padding:7px 0;border-bottom:1px solid var(--line)"><span>${p.fecha} · ${esc(p.medio)} · ${esc(p.registro)}</span><span>${money(p.valor)} <span class="chip ${p.estado === 'Aplicado' ? 'c-ok' : p.estado === 'Rechazado' ? 'c-bad' : 'c-warn'}">${p.estado}</span></span></div>`).join('') : ''}
+  ${c.gestiones.length ? `<h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">GESTIONES DE COBRO</h3>` + c.gestiones.map(g => `<div class="small" style="padding:7px 0;border-bottom:1px solid var(--line)"><b>${esc(g.resultado)}</b> · ${g.fecha}${g.compromiso ? ' · compromiso ' + g.compromiso : ''}<div class="mut">${esc(g.nota)}</div></div>`).join('') : ''}`);
+  if ($('#pg_b')) {
+    $('#pg_v').oninput = e => { const n = e.target.value.replace(/\D/g, ''); e.target.value = n ? Number(n).toLocaleString('es-CO') : ''; };
+    $('#pg_b').onclick = e => conBoton(e.currentTarget, async () => {
+      const r = await api('adminPago', T, { creditoId: c.id, valor: $('#pg_v').value.replace(/\D/g, ''), medio: $('#pg_m').value, obs: $('#pg_o').value });
+      toast(r.pagado ? '¡Crédito pagado por completo!' : 'Pago registrado. Saldo ' + money(r.saldo)); await cargar(true); detalle(c.id);
+    });
+  }
+  $('#cb_s').onchange = async e => { try { await api('adminAsignarCobrador', T, c.id, e.target.value); toast('Cobrador asignado'); cargar(true); } catch (x) { toast(x.message, true); } };
+  if ($('#an_b')) $('#an_b').onclick = e => { if (confirm('¿Anular el crédito ' + c.id + '? El capital vuelve a caja.')) conBoton(e.currentTarget, async () => { await api('adminAnular', T, c.id); cerrarModal(); toast('Crédito anulado'); cargar(true); }); };
+}
+
+/* ---------------- PAGOS ---------------- */
+function pagos() {
+  $('#body').innerHTML = `<div class="card mb"><h3>Transferencias por verificar</h3>${D.porVerificar.length ? '<div class="list">' + D.porVerificar.map(p => `<div class="item due row between">
+      <div><b>${esc(p.cliente)}</b> <span class="small mut">${p.creditoId} · ${p.fecha}</span><div class="small mut">Ref: ${esc(p.referencia || '—')} ${p.comprobante ? `· <a href="${p.comprobante}" target="_blank">Ver comprobante</a>` : ''}</div></div>
+      <div class="row"><b style="font-size:18px">${money(p.valor)}</b><button class="btn okb sm" onclick="verificar('${p.id}',true,this)">Aprobar</button><button class="btn bad sm" onclick="verificar('${p.id}',false,this)">Rechazar</button></div></div>`).join('') + '</div>' : '<div class="empty">Nada por verificar</div>'}</div>
+  <div class="card"><h3>Últimos pagos</h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Crédito</th><th>Cliente</th><th>Medio</th><th>Registró</th><th class="num">Valor</th><th>Estado</th></tr></thead><tbody>
+  ${D.pagos.map(p => `<tr class="click" onclick="detalle('${p.creditoId}')"><td class="small">${p.fecha}</td><td>${p.creditoId}</td><td>${esc(p.cliente)}</td><td>${esc(p.medio)}</td><td class="small">${esc(p.registro)}</td><td class="num">${money(p.valor)}</td>
+    <td><span class="chip ${p.estado === 'Aplicado' ? 'c-ok' : p.estado === 'Rechazado' ? 'c-bad' : 'c-warn'}">${p.estado}</span>${p.entregado === 'NO' ? ' <span class="chip c-warn">Sin entregar</span>' : ''}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function verificar(id, ok, btn) {
+  if (!ok && !confirm('¿Rechazar este pago reportado?')) return;
+  conBoton(btn, async () => { await api('adminVerificarPago', T, id, ok); toast(ok ? 'Pago aplicado' : 'Pago rechazado'); cargar(true); });
+}
+
+/* ---------------- COBRADORES ---------------- */
+function tablaCuadre() {
+  return D.cuadre.length ? `<div class="tw"><table><thead><tr><th>Cobrador</th><th class="num">Cartera asignada</th><th class="num">Recaudo mes</th><th class="num">Comisión mes</th><th class="num">Por entregar</th><th></th></tr></thead><tbody>
+  ${D.cuadre.map(c => `<tr><td>${esc(c.nombre)}</td><td class="num">${money(c.cartera)}</td><td class="num">${money(c.recaudoMes)}</td><td class="num">${money(c.comisionMes)}</td>
+    <td class="num"><b style="color:${c.pendiente ? 'var(--warn)' : 'inherit'}">${money(c.pendiente)}</b></td>
+    <td class="right">${c.pendiente ? `<button class="btn sm" onclick="recibir('${c.id}',this)">Recibir entrega</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Aún no hay cobradores</div>';
+}
+function cobradores() {
+  $('#body').innerHTML = `<div class="card mb"><h3>Enlaces de la plataforma</h3>
+    <div class="small">Clientes: <a href="${BASE_URL}" target="_blank">${BASE_URL}</a></div>
+    <div class="small mt" style="margin-top:6px">Cobradores: <a href="${BASE_URL}cobrador.html" target="_blank">${BASE_URL}cobrador.html</a></div></div>
+  <div class="card mb"><h3>Cuadre de caja</h3>${tablaCuadre()}</div>
+  <div class="card"><div class="row between mb"><h3 style="margin:0">Equipo de cobro</h3><button class="btn sm" onclick="editarCob()">+ Cobrador</button></div>
+  <div class="tw"><table><thead><tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Zona</th><th>PIN</th><th class="num">Comisión</th><th>Estado</th><th></th></tr></thead><tbody>
+  ${D.cobradores.map(c => `<tr><td>${c.id}</td><td>${esc(c.nombre)}</td><td>${esc(c.telefono)}</td><td>${esc(c.zona)}</td><td>••••</td><td class="num">${c.comision}%</td><td>${c.activo ? '<span class="chip c-ok">Activo</span>' : '<span class="chip c-mut">Inactivo</span>'}</td>
+  <td class="right"><button class="btn dark sm" onclick="editarCob('${c.id}')">Editar</button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function recibir(id, btn) { conBoton(btn, async () => { const t = await api('adminRecibirEntrega', T, id); toast('Recibido ' + money(t) + ' en caja'); cargar(true); }); }
+function editarCob(id) {
+  const c = D.cobradores.find(x => x.id === id) || { activo: true, comision: 5 };
+  modal(`<h2>${id ? 'Editar' : 'Nuevo'} cobrador</h2><div class="grid g2 st">
+    <div><label>Nombre</label><input id="cb_n" value="${esc(c.nombre || '')}"></div><div><label>Teléfono</label><input id="cb_t" value="${esc(c.telefono || '')}"></div>
+    <div><label>Zona / ruta</label><input id="cb_z" value="${esc(c.zona || '')}"></div><div><label>PIN de acceso (4+ dígitos)</label><input id="cb_p" inputmode="numeric" value="${esc(c.pin || '')}"></div>
+    <div><label>Comisión sobre recaudo %</label><input id="cb_c" type="number" step="0.5" value="${c.comision}"></div>
+    <div><label>Estado</label><select id="cb_a"><option value="1" ${c.activo ? 'selected' : ''}>Activo</option><option value="0" ${!c.activo ? 'selected' : ''}>Inactivo</option></select></div></div>
+    <button class="btn full mt" id="cb_b">Guardar</button>`);
+  $('#cb_b').onclick = e => conBoton(e.currentTarget, async () => {
+    await api('adminGuardarCobrador', T, { id, nombre: $('#cb_n').value.trim(), telefono: $('#cb_t').value, zona: $('#cb_z').value, pin: $('#cb_p').value.trim(), comision: $('#cb_c').value, activo: $('#cb_a').value === '1' });
+    cerrarModal(); toast('Cobrador guardado'); cargar(true);
+  });
+}
+
+/* ---------------- CAJA ---------------- */
+function caja() {
+  $('#body').innerHTML = `<div class="grid g3 st mb">${kpi('Saldo en caja', money(D.kpi.saldoCaja), 'capital disponible', 'gold')}${kpi('Capital en la calle', money(D.kpi.capitalPendiente), 'capital por recuperar')}${kpi('Por entregar cobradores', money(D.kpi.pendienteEntrega), 'efectivo recaudado sin entregar')}</div>
+  <div class="card mb"><h3>Registrar movimiento</h3><div class="grid g3 st">
+    <div><label>Tipo</label><select id="cj_t"><option>Capital</option><option>Ingreso</option><option>Gasto</option><option>Retiro</option></select></div>
+    <div><label>Valor</label><input id="cj_v" inputmode="numeric"></div><div><label>Concepto</label><input id="cj_c" placeholder="Ej: aporte de capital, papelería…"></div></div>
+    <button class="btn mt" id="cj_b">Guardar movimiento</button></div>
+  <div class="card"><h3>Movimientos</h3><div class="tw"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th class="num">Valor</th><th>Usuario</th></tr></thead><tbody>
+  ${D.caja.map(m => `<tr><td class="small">${m.fecha}</td><td><span class="chip ${m.valor >= 0 ? 'c-ok' : 'c-bad'}">${esc(m.tipo)}</span></td><td>${esc(m.concepto)}</td><td class="num" style="color:${m.valor >= 0 ? 'var(--ok)' : 'var(--bad)'}">${money(m.valor)}</td><td class="small">${esc(m.usuario)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  $('#cj_v').oninput = e => { const n = e.target.value.replace(/\D/g, ''); e.target.value = n ? Number(n).toLocaleString('es-CO') : ''; };
+  $('#cj_b').onclick = e => conBoton(e.currentTarget, async () => { await api('adminCaja', T, { tipo: $('#cj_t').value, valor: $('#cj_v').value.replace(/\D/g, ''), concepto: $('#cj_c').value }); toast('Movimiento guardado'); cargar(true); });
+}
+
+T ? cargar() : pintarLogin();
+</script>
+</body>
+</html>

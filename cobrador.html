@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ÓNIX Capital · Cobros</title>
+<meta name="theme-color" content="#0b0b0d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0d; --bg2:#121215; --card:#17171c; --card2:#1e1e24; --line:#2a2a32;
+  --gold:#c9a961; --gold2:#e6cf94; --goldDim:rgba(201,169,97,.14);
+  --txt:#f1ede4; --mut:#9b978e; --ok:#4fbf8b; --okDim:rgba(79,191,139,.14);
+  --warn:#e3b04b; --warnDim:rgba(227,176,75,.14); --bad:#e0645c; --badDim:rgba(224,100,92,.14);
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;background:radial-gradient(1200px 500px at 50% -200px,rgba(201,169,97,.10),transparent 70%),var(--bg)}
+a{color:var(--gold)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 80px}
+.narrow{max-width:560px}
+/* Marca */
+.brand{display:flex;align-items:center;gap:12px}
+.gem{width:38px;height:38px;flex:none}
+.brand b{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;letter-spacing:.18em;color:var(--txt)}
+.brand b span{color:var(--gold)}
+.brand b{white-space:nowrap}
+.brand small{white-space:nowrap;display:block;font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);margin-top:-2px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 0;border-bottom:1px solid var(--line);margin-bottom:22px;position:sticky;top:0;background:rgba(11,11,13,.92);backdrop-filter:blur(10px);z-index:20}
+header.top{flex-wrap:wrap}
+@media(max-width:520px){.brand b{font-size:19px;letter-spacing:.12em}.brand small{font-size:9px;letter-spacing:.2em}.gem{width:32px;height:32px}header.top .row{flex-wrap:nowrap}}
+/* Tarjetas */
+.card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card h3{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:12px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:820px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.g2.st,.g3.st{grid-template-columns:1fr}}
+.kpi{padding:16px}
+.kpi .l{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em}
+.kpi .v{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--mut);margin-top:2px}
+.kpi.gold .v{color:var(--gold2)}
+/* Formularios */
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 5px;letter-spacing:.03em}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:11px;padding:12px 13px;font:inherit;outline:none;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+input[type=range]{padding:0;height:6px;accent-color:var(--gold);background:transparent;border:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--gold);background:linear-gradient(180deg,var(--gold2),var(--gold));color:#141210;font-weight:700;border-radius:12px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;transition:filter .15s,transform .05s}
+.btn:hover{filter:brightness(1.07)}.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--gold)}
+.btn.dark{background:var(--card2);border-color:var(--line);color:var(--txt)}
+.btn.bad{background:transparent;border-color:var(--bad);color:var(--bad)}
+.btn.okb{background:var(--ok);border-color:var(--ok);color:#06140d}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:9px}
+.btn.full{width:100%}
+.btn:disabled{opacity:.5;cursor:wait}
+/* Tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;scrollbar-width:none}
+.tabs button{flex:none;background:transparent;border:1px solid var(--line);color:var(--mut);padding:9px 15px;border-radius:999px;font:inherit;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:var(--goldDim);border-color:var(--gold);color:var(--gold2)}
+.tabs .cnt{background:var(--gold);color:#111;border-radius:999px;padding:0 7px;font-size:11px;margin-left:6px;font-weight:700}
+/* Tablas */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:600;color:var(--mut);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;padding:11px 12px;background:var(--bg2);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.click{cursor:pointer}tr.click:hover td{background:rgba(255,255,255,.025)}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Chips */
+.chip{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.c-ok{background:var(--okDim);color:var(--ok)}.c-warn{background:var(--warnDim);color:var(--warn)}
+.c-bad{background:var(--badDim);color:var(--bad)}.c-gold{background:var(--goldDim);color:var(--gold2)}
+.c-mut{background:rgba(255,255,255,.06);color:var(--mut)}
+.mut{color:var(--mut)}.small{font-size:12.5px}.right{text-align:right}.mt{margin-top:14px}.mb{margin-bottom:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+.bar{height:7px;background:var(--line);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.big{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;color:var(--gold2);line-height:1.05}
+.serif{font-family:'Cormorant Garamond',serif}
+hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+/* Modal y toast */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:0}
+@media(min-width:700px){.ov{align-items:center;padding:20px}}
+.md{background:var(--card);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:720px;max-height:92vh;overflow:auto;padding:20px}
+@media(min-width:700px){.md{border-radius:20px}}
+.md h2{font-family:'Cormorant Garamond',serif;font-size:26px;margin-bottom:4px}
+.x{float:right;background:none;border:none;color:var(--mut);font-size:26px;cursor:pointer;line-height:1}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--gold);color:var(--txt);padding:12px 18px;border-radius:12px;z-index:99;display:none;max-width:90vw;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#toast.err{border-color:var(--bad)}
+.load{display:flex;justify-content:center;padding:50px}
+.spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{padding:30px;text-align:center;color:var(--mut)}
+.login{max-width:380px;margin:12vh auto 0;text-align:center}
+.login .brand{justify-content:center;margin-bottom:26px}
+.pin{letter-spacing:.6em;text-align:center;font-size:22px}
+.list{display:grid;gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.item.alert{border-left:3px solid var(--bad)}.item.due{border-left:3px solid var(--warn)}.item.okk{border-left:3px solid var(--ok)}
+.score{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+.sc-verde{background:var(--okDim);color:var(--ok);border:2px solid var(--ok)}
+.sc-amarillo{background:var(--warnDim);color:var(--warn);border:2px solid var(--warn)}
+.sc-rojo{background:var(--badDim);color:var(--bad);border:2px solid var(--bad)}
+</style>
+
+<style>
+.acts{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;margin-top:12px}
+.acts .btn{padding:10px 6px;font-size:13px}
+.hecho{opacity:.55}
+.res3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.res3 .kpi .v{font-size:17px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.opts button{background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:11px;font:inherit;font-size:13px;cursor:pointer}
+.opts button.on{border-color:var(--gold);background:var(--goldDim);color:var(--gold2)}
+</style>
+</head>
+<body data-marca="ÓNIX Capital">
+<div class="wrap narrow"><div id="app"></div></div>
+<div id="toast"></div>
+<script>
+const $ = s => document.querySelector(s);
+const money = v => '$' + Math.round(Number(v) || 0).toLocaleString('es-CO');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const GEM = '<svg class="gem" viewBox="0 0 40 40"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6cf94"/><stop offset="1" stop-color="#9c7d3c"/></linearGradient></defs><polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#121215" stroke="url(#gg)" stroke-width="1.6"/><polygon points="20,9 29,14 29,26 20,31 11,26 11,14" fill="none" stroke="url(#gg)" stroke-width="1" opacity=".55"/><polygon points="20,9 29,14 20,20 11,14" fill="url(#gg)" opacity=".85"/></svg>';
+function brandHTML(nombre, sub) {
+  const n = String(nombre || 'ÓNIX Capital').split(' ');
+  return '<div class="brand">' + GEM + '<div><b>' + esc(n[0].toUpperCase()) + (n.length > 1 ? ' <span>' + esc(n.slice(1).join(' ').toUpperCase()) + '</span>' : '') + '</b><small>' + esc(sub || '') + '</small></div></div>';
+}
+const API_URL = 'https://script.google.com/macros/s/AKfycbyeZ1O-2ma_xIF82IF8FTgH7N6uj3y97PY2pDFQhWkrj-qBA-tZ4d7C7op2BLyL_cvyUA/exec';
+const BASE_URL = location.href.split('?')[0].replace(/[^/]*$/, '');
+async function api(fn, ...args) {
+  let j;
+  try {
+    const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args }) });
+    j = await r.json();
+  } catch (e) { throw new Error('Sin conexión con el servidor. Intenta de nuevo.'); }
+  if (!j.ok) {
+    const m = j.error || 'Error';
+    if (m.indexOf('SESION') >= 0 && window.onSesionExpirada) window.onSesionExpirada();
+    throw new Error(m.replace(/^.*SESION:\s*/, ''));
+  }
+  return j.data;
+}
+let _tt;
+function toast(msg, err) {
+  const t = $('#toast'); t.textContent = msg; t.className = err ? 'err' : ''; t.style.display = 'block';
+  clearTimeout(_tt); _tt = setTimeout(() => t.style.display = 'none', 3800);
+}
+function modal(html) {
+  cerrarModal();
+  const o = document.createElement('div'); o.className = 'ov'; o.id = 'ov';
+  o.innerHTML = '<div class="md"><button class="x" onclick="cerrarModal()">×</button>' + html + '</div>';
+  o.addEventListener('click', e => { if (e.target === o) cerrarModal(); });
+  document.body.appendChild(o);
+}
+function cerrarModal() { const o = $('#ov'); if (o) o.remove(); }
+const LOADING = '<div class="load"><div class="spin"></div></div>';
+function store(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { return null; } }
+async function conBoton(btn, fn) {
+  const t = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spin" style="width:16px;height:16px;border-width:2px"></span>';
+  try { return await fn(); } catch (e) { toast(e.message, true); } finally { btn.disabled = false; btn.innerHTML = t; }
+}
+function chipSit(s, atraso) {
+  if (s === 'En mora') return '<span class="chip c-bad">Mora ' + atraso + 'd</span>';
+  if (s === 'Al día') return '<span class="chip c-ok">Al día</span>';
+  if (s === 'Pagado') return '<span class="chip c-gold">Pagado</span>';
+  return '<span class="chip c-mut">' + esc(s) + '</span>';
+}
+function chipCuota(q, hoy) {
+  if (q.estado === 'Pagada') return '<span class="chip c-ok">Pagada</span>';
+  if (q.fecha < hoy) return '<span class="chip c-bad">Vencida</span>';
+  if (q.estado === 'Parcial') return '<span class="chip c-warn">Parcial</span>';
+  if (q.fecha === hoy) return '<span class="chip c-warn">Hoy</span>';
+  return '<span class="chip c-mut">Pendiente</span>';
+}
+function fechaBonita(s) {
+  if (!s) return '';
+  const d = new Date(s.slice(0, 10) + 'T12:00:00');
+  return d.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+function hoyLocal() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function wa(tel, txt) { let t = String(tel || '').replace(/\D/g, ''); if (t.length === 10) t = '57' + t; return 'https://wa.me/' + t + '?text=' + encodeURIComponent(txt || ''); }
+function tablaCuotas(cuotas, hoy) {
+  return '<div class="tw" style="max-height:340px;overflow:auto"><table><thead><tr><th>#</th><th>Vence</th><th class="num">Cuota</th><th class="num">Abonado</th><th>Estado</th></tr></thead><tbody>' +
+    cuotas.map(q => '<tr><td>' + q.n + '</td><td>' + fechaBonita(q.fecha) + '</td><td class="num">' + money(q.valor) + '</td><td class="num">' + money(q.pagado) + '</td><td>' + chipCuota(q, hoy) + (q.atraso ? ' <span class="small mut">+' + q.atraso + 'd</span>' : '') + '</td></tr>').join('') +
+    '</tbody></table></div>';
+}
+</script>
+
+<script>
+const MARCA = document.body.dataset.marca;
+let T = store('onix_cob'), R = null, VISTA = 'hoy';
+window.onSesionExpirada = () => { store('onix_cob', null); T = null; pintarLogin(); };
+
+function pintarLogin() {
+  $('#app').innerHTML = `<div class="login">${brandHTML(MARCA, 'Ruta de cobro')}
+    <div class="card"><label>Tu PIN</label><input id="pin" type="password" inputmode="numeric" class="pin" autofocus>
+    <button class="btn full mt" id="lb">Ingresar</button></div></div>`;
+  const go = () => conBoton($('#lb'), async () => { const r = await api('login', 'cobrador', $('#pin').value); T = r.token; store('onix_cob', T); cargar(); });
+  $('#lb').onclick = go; $('#pin').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+
+async function cargar(sil) {
+  if (!sil) $('#app').innerHTML = LOADING;
+  try { R = await api('cobradorRuta', T); pintar(); } catch (e) { if (T) $('#app').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
+}
+
+function pintar() {
+  const r = R.resumen;
+  const lista = VISTA === 'hoy' ? R.creditos.filter(c => c.exigible > 0 || c.pagadoHoy || c.gestionHoy) : R.creditos;
+  $('#app').innerHTML = `<header class="top">${brandHTML(MARCA, 'Ruta de cobro')}<div class="row"><button class="btn dark sm" onclick="cargar()">↻</button><button class="btn dark sm" onclick="salir()">Salir</button></div></header>
+  <div class="row between mb"><div><div class="small mut">${fechaBonita(R.hoy)}</div><div class="serif" style="font-size:26px;font-weight:700">Hola, ${esc(R.nombre.split(' ')[0])}</div></div>
+    <div class="right small mut">Visitados<br><b style="color:var(--txt);font-size:18px">${r.visitados}/${r.porCobrar}</b></div></div>
+  <div class="res3 mb">
+    <div class="card kpi"><div class="l">Por cobrar</div><div class="v">${money(r.exigible)}</div></div>
+    <div class="card kpi gold"><div class="l">Recaudado hoy</div><div class="v">${money(r.recaudadoHoy)}</div><div class="s">${r.pagosHoy} pagos</div></div>
+    <div class="card kpi"><div class="l">Por entregar</div><div class="v">${money(r.porEntregar)}</div></div>
+  </div>
+  <div class="tabs"><button class="${VISTA === 'hoy' ? 'on' : ''}" onclick="VISTA='hoy';pintar()">Cobrar hoy</button><button class="${VISTA === 'todos' ? 'on' : ''}" onclick="VISTA='todos';pintar()">Todos mis clientes (${R.creditos.length})</button><button class="${VISTA === 'recaudo' ? 'on' : ''}" onclick="VISTA='recaudo';pintar()">Mi recaudo</button></div>
+  <div id="lst"></div>`;
+  if (VISTA === 'recaudo') {
+    $('#lst').innerHTML = R.pagosHoy.length ? '<div class="list">' + R.pagosHoy.map(p => `<div class="item row between"><div><b>${esc(p.cliente)}</b><div class="small mut">${p.fecha.slice(11)} · ${esc(p.medio)} · ${p.creditoId}</div></div><b>${money(p.valor)}</b></div>`).join('') + '</div>' : '<div class="card empty">Aún no registras pagos hoy</div>';
+    return;
+  }
+  $('#lst').innerHTML = lista.length ? '<div class="list">' + lista.map(item).join('') + '</div>' : '<div class="card empty">No tienes cobros pendientes hoy 👌</div>';
+}
+
+function item(c) {
+  const hecho = c.pagadoHoy || c.gestionHoy;
+  const cls = c.diasAtraso > 0 ? 'alert' : c.exigible > 0 ? 'due' : 'okk';
+  return `<div class="item ${cls} ${hecho && !c.exigible ? 'hecho' : ''}">
+    <div class="row between"><div onclick="plan('${c.id}')" style="cursor:pointer"><b style="font-size:16px">${esc(c.cliente)}</b><div class="small mut">📍 ${esc(c.direccion || '')} ${esc(c.barrio || '')}</div></div>${chipSit(c.situacion, c.diasAtraso)}</div>
+    <div class="row between mt small"><div><span class="mut">Cobrar</span><br><b style="font-size:18px">${money(c.exigible)}</b></div><div><span class="mut">Cuota</span><br>${money(c.valorCuota)}</div><div class="right"><span class="mut">Saldo</span><br>${money(c.saldo)}</div></div>
+    ${c.pagadoHoy ? `<div class="small mt" style="color:var(--ok)">✓ Pagó hoy ${money(c.pagadoHoy)}</div>` : ''}${c.gestionHoy ? `<div class="small mt" style="color:var(--warn)">● ${esc(c.gestionHoy)}</div>` : ''}
+    <div class="acts"><button class="btn" onclick="cobrar('${c.id}')">Cobrar</button><button class="btn dark" onclick="gestion('${c.id}')" title="No pagó">✕</button>
+      <a class="btn dark" href="${wa(c.telefono, 'Hola ' + c.cliente.split(' ')[0] + ', soy tu asesor de ' + MARCA + '.')}" target="_blank" title="WhatsApp">💬</a>
+      <a class="btn dark" href="https://www.google.com/maps/search/${encodeURIComponent((c.direccion || '') + ' ' + (c.barrio || ''))}" target="_blank" title="Mapa">📍</a></div></div>`;
+}
+
+function cobrar(id) {
+  const c = R.creditos.find(x => x.id === id);
+  const sug = Math.min(c.saldo, c.exigible > 0 ? c.exigible : c.valorCuota);
+  modal(`<h2>${esc(c.cliente)}</h2><p class="small mut">${c.id} · saldo ${money(c.saldo)} · ${c.cuotasVencidas} cuota(s) vencida(s)</p>
+    <label>Valor recibido</label><input id="v" inputmode="numeric" class="pin" style="letter-spacing:.05em" value="${Number(sug).toLocaleString('es-CO')}">
+    <div class="row mt"><button class="btn dark sm" onclick="$('#v').value='${Number(Math.min(c.valorCuota, c.saldo)).toLocaleString('es-CO')}'">1 cuota</button>
+      ${c.exigible > 0 ? `<button class="btn dark sm" onclick="$('#v').value='${Number(c.exigible).toLocaleString('es-CO')}'">Ponerse al día</button>` : ''}
+      <button class="btn dark sm" onclick="$('#v').value='${Number(c.saldo).toLocaleString('es-CO')}'">Saldo total</button></div>
+    <label>Medio</label><select id="m"><option>Efectivo</option><option>Nequi</option><option>Daviplata</option><option>Transferencia</option></select>
+    <label>Observación</label><input id="o">
+    <button class="btn full mt" id="b">Confirmar pago</button>`);
+  $('#v').oninput = e => { const n = e.target.value.replace(/\D/g, ''); e.target.value = n ? Number(n).toLocaleString('es-CO') : ''; };
+  $('#b').onclick = e => conBoton(e.currentTarget, async () => {
+    const valor = +$('#v').value.replace(/\D/g, '');
+    const r = await api('cobradorPago', T, { creditoId: id, valor, medio: $('#m').value, obs: $('#o').value });
+    const recibo = `*${MARCA}* · Recibo de pago\nCliente: ${c.cliente}\nCrédito: ${c.id}\nValor recibido: ${money(valor)}\nNuevo saldo: ${money(r.saldo)}\nFecha: ${new Date().toLocaleString('es-CO')}\nCobrador: ${R.nombre}\n¡Gracias por tu pago!`;
+    modal(`<div style="text-align:center;padding:14px 0"><div class="big">✓</div><h2>Pago registrado</h2><p class="mut">${money(valor)} · saldo ${money(r.saldo)}${r.pagado ? '<br><b style="color:var(--gold2)">¡Crédito cancelado por completo!</b>' : ''}</p>
+      <a class="btn full mt" target="_blank" href="${wa(c.telefono, recibo)}">Enviar recibo por WhatsApp</a><button class="btn dark full mt" onclick="cerrarModal()">Cerrar</button></div>`);
+    cargar(true);
+  });
+}
+
+function gestion(id) {
+  const c = R.creditos.find(x => x.id === id);
+  const ops = ['No estaba', 'Sin dinero', 'Promesa de pago', 'Se negó a pagar', 'Dirección errada', 'Otro'];
+  let sel = '';
+  modal(`<h2>Visita sin pago</h2><p class="small mut">${esc(c.cliente)} · ${c.id}</p><label>Resultado</label>
+    <div class="opts">${ops.map(o => `<button data-o="${o}">${o}</button>`).join('')}</div>
+    <label>Fecha de compromiso (si prometió pagar)</label><input id="cf" type="date">
+    <label>Nota</label><textarea id="nt" rows="2"></textarea><button class="btn full mt" id="gb">Guardar gestión</button>`);
+  document.querySelectorAll('.opts button').forEach(b => b.onclick = () => { sel = b.dataset.o; document.querySelectorAll('.opts button').forEach(x => x.className = x === b ? 'on' : ''); });
+  $('#gb').onclick = e => conBoton(e.currentTarget, async () => {
+    if (!sel) throw new Error('Elige un resultado');
+    await api('cobradorGestion', T, { creditoId: id, resultado: sel, compromiso: $('#cf').value, nota: $('#nt').value });
+    cerrarModal(); toast('Gestión guardada'); cargar(true);
+  });
+}
+
+async function plan(id) {
+  modal(LOADING);
+  try {
+    const c = await api('adminDetalle', T, id);
+    modal(`<h2>${esc(c.cliente)}</h2><p class="small mut">${c.id} · ${c.frecuencia} · ${c.numCuotas} cuotas de ${money(c.valorCuota)} · 📞 <a href="tel:${esc(c.contacto.telefono)}">${esc(c.contacto.telefono)}</a></p>
+      <div class="bar mt"><i style="width:${c.avance}%"></i></div><p class="small mut" style="margin:6px 0 12px">${c.cuotasPagadas}/${c.numCuotas} cuotas · pagado ${money(c.pagado)} de ${money(c.total)}</p>
+      ${tablaCuotas(c.cuotas, R.hoy)}
+      ${c.gestiones.length ? '<h3 class="mt" style="font-size:13px;color:var(--gold)">GESTIONES</h3>' + c.gestiones.slice(0, 5).map(g => `<div class="small" style="padding:6px 0;border-bottom:1px solid var(--line)"><b>${esc(g.resultado)}</b> · ${g.fecha}<div class="mut">${esc(g.nota)}</div></div>`).join('') : ''}`);
+  } catch (e) { cerrarModal(); toast(e.message, true); }
+}
+
+async function salir() { try { await api('logout', T); } catch (e) {} store('onix_cob', null); T = null; pintarLogin(); }
+T ? cargar() : pintarLogin();
+</script>
+</body>
+</html>
