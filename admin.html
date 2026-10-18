@@ -253,13 +253,20 @@ async function cargar(silencioso) {
   try { D = await api('adminPanel', T); pintar(); } catch (e) { if (T) $('#app').innerHTML = '<div class="empty">' + esc(e.message) + '</div>'; }
 }
 
+function redondearCuota(total, n) {
+  // Cuota al valor más cercano (1.000 → 500 → 100 → 50); la última cuota completa el saldo exacto
+  for (const r of [1000, 500, 100, 50]) {
+    const cuota = Math.round(total / n / r) * r, ultima = total - cuota * (n - 1);
+    if (cuota > 0 && ultima > 0 && ultima <= cuota * 2) return { cuota, ultima };
+  }
+  const cuota = Math.ceil(total / n); return { cuota, ultima: total - cuota * (n - 1) };
+}
 function calc(capital, meses, frec, tasa) {
   const C = D.config; tasa = tasa === '' || tasa == null ? C.tasa : +tasa;
   const n = Math.max(1, Math.round(meses * (C.porMes[frec] || 1)));
   const interes = Math.round(capital * tasa / 100 * meses), total = capital + interes;
-  let cuota = Math.round(total / n / C.redondeo) * C.redondeo, ultima = total - cuota * (n - 1);
-  if (cuota <= 0 || ultima <= 0 || ultima > cuota * 1.5) cuota = Math.ceil(total / n);
-  return { n, interes, total, cuota, mensual: Math.round(total / meses) };
+  const { cuota, ultima } = redondearCuota(total, n);
+  return { n, interes, total, cuota, ultima, mensual: Math.round(total / meses) };
 }
 
 function pintar() {
@@ -344,7 +351,7 @@ function bindParams() {
   const f = () => {
     const cap = +$('#p_cap').value.replace(/\D/g, ''), mes = +$('#p_mes').value || 1;
     const c = calc(cap, mes, $('#p_fre').value, $('#p_tas').value);
-    $('#p_sim').innerHTML = `<div>Cuota<b>${money(c.cuota)}</b></div><div>Nº cuotas<b>${c.n}</b></div><div>Interés<b>${money(c.interes)}</b></div><div>Total<b>${money(c.total)}</b></div>`;
+    $('#p_sim').innerHTML = `<div>Cuota<b>${money(c.cuota)}</b>${c.ultima !== c.cuota ? `<span>última ${money(c.ultima)}</span>` : ''}</div><div>Nº cuotas<b>${c.n}</b></div><div>Interés<b>${money(c.interes)}</b></div><div>Total<b>${money(c.total)}</b></div>`;
   };
   ['p_cap', 'p_mes', 'p_fre', 'p_tas'].forEach(id => $('#' + id).addEventListener('input', f));
   $('#p_cap').addEventListener('input', e => { const n = e.target.value.replace(/\D/g, ''); e.target.value = n ? Number(n).toLocaleString('es-CO') : ''; });
@@ -396,7 +403,7 @@ function preaprobar(id) {
     <p class="small mut mt">El cliente verá la preaprobación en <b>Mi crédito</b> y deberá subir su cédula, la selfie y la cuenta de desembolso. Luego podrás verificar y desembolsar.</p>
     <button class="btn full mt" id="pa_b">Preaprobar</button>`);
   const f = () => { const c = calc(+$('#pa_c').value.replace(/\D/g, ''), +$('#pa_m').value || 1, $('#pa_f').value);
-    $('#pa_sim').innerHTML = `<div>Cuota<b>${money(c.cuota)}</b></div><div>Nº cuotas<b>${c.n}</b></div><div>Interés<b>${money(c.interes)}</b></div><div>Total<b>${money(c.total)}</b></div>`; };
+    $('#pa_sim').innerHTML = `<div>Cuota<b>${money(c.cuota)}</b>${c.ultima !== c.cuota ? `<span>última ${money(c.ultima)}</span>` : ''}</div><div>Nº cuotas<b>${c.n}</b></div><div>Interés<b>${money(c.interes)}</b></div><div>Total<b>${money(c.total)}</b></div>`; };
   ['pa_c', 'pa_m', 'pa_f'].forEach(i => $('#' + i).addEventListener('input', f));
   $('#pa_c').addEventListener('input', e => { const n = e.target.value.replace(/\D/g, ''); e.target.value = n ? Number(n).toLocaleString('es-CO') : ''; });
   f();

@@ -256,12 +256,19 @@ function tablaCuotas(cuotas, hoy) {
 <script>
 let P = null, S = { monto: 0, meses: 0, frec: 'Semanal' }, consulta = null;
 
+function redondearCuota(total, n) {
+  // Cuota al valor más cercano (1.000 → 500 → 100 → 50); la última cuota completa el saldo exacto
+  for (const r of [1000, 500, 100, 50]) {
+    const cuota = Math.round(total / n / r) * r, ultima = total - cuota * (n - 1);
+    if (cuota > 0 && ultima > 0 && ultima <= cuota * 2) return { cuota, ultima };
+  }
+  const cuota = Math.ceil(total / n); return { cuota, ultima: total - cuota * (n - 1) };
+}
 function calc(capital, meses, frec) {
   const n = Math.max(1, Math.round(meses * (P.porMes[frec] || 1)));
   const interes = Math.round(capital * P.tasa / 100 * meses), total = capital + interes;
-  let cuota = Math.round(total / n / P.redondeo) * P.redondeo, ultima = total - cuota * (n - 1);
-  if (cuota <= 0 || ultima <= 0 || ultima > cuota * 1.5) cuota = Math.ceil(total / n);
-  return { n, interes, total, cuota };
+  const { cuota, ultima } = redondearCuota(total, n);
+  return { n, interes, total, cuota, ultima };
 }
 const etiqueta = { Diaria: 'diaria', Semanal: 'semanal', Quincenal: 'quincenal', Mensual: 'mensual' };
 
@@ -298,6 +305,7 @@ function actualizar() {
   const c = calc(S.monto, S.meses, S.frec);
   $('#vm').textContent = money(S.monto);
   $('#res').innerHTML = `<div class="small mut">Tu cuota ${etiqueta[S.frec]}</div><div class="big">${money(c.cuota)}</div>
+    ${c.n > 1 && c.ultima !== c.cuota ? `<div class="small mut">${c.n - 1} cuotas de ${money(c.cuota)} + última de ${money(c.ultima)}</div>` : ''}
     <div class="k"><div>Cuotas<b>${c.n}</b></div><div>Interés<b>${money(c.interes)}</b></div><div>Total a pagar<b>${money(c.total)}</b></div></div>`;
 }
 
