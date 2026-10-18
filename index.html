@@ -315,46 +315,20 @@ function formSolicitud() {
     <div><label>Referencia personal</label><input id="f_ref"></div>
     <div><label>Celular de la referencia</label><input id="f_tre" inputmode="tel"></div>
   </div>
-  <h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">¿DÓNDE TE CONSIGNAMOS?</h3>
-  <div class="grid g3 st">
-    <div><label>Banco / billetera *</label><select id="f_ban"><option value="">Selecciona…</option>${['Nequi', 'Daviplata', 'Bancolombia', 'Davivienda', 'Banco de Bogotá', 'BBVA', 'Banco Caja Social', 'Nu', 'Banco Popular', 'Banco de Occidente', 'Otro'].map(b => `<option>${b}</option>`).join('')}</select></div>
-    <div><label>Tipo *</label><select id="f_tip"><option>Billetera digital</option><option>Ahorros</option><option>Corriente</option></select></div>
-    <div><label>Número de cuenta *</label><input id="f_cta" inputmode="numeric"></div>
-  </div>
-  <p class="small mut" style="margin-top:6px">La cuenta debe estar a tu nombre.</p>
-  <h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">VERIFICACIÓN DE IDENTIDAD</h3>
-  <div class="docs">
-    <label class="doc" id="d_frente"><input type="file" accept="image/*" data-k="frente"><span class="ph">🪪</span><b>Cédula · frente</b><small>Toca para subir foto</small></label>
-    <label class="doc" id="d_reverso"><input type="file" accept="image/*" data-k="reverso"><span class="ph">🔄</span><b>Cédula · reverso</b><small>Toca para subir foto</small></label>
-    <label class="doc" id="d_selfie"><input type="file" accept="image/*" data-k="selfie"><span class="ph">🤳</span><b>Selfie con tu cédula</b><small>Tu cara y la cédula visibles</small></label>
-  </div>
+  <p class="small mut mt">Si tu solicitud es preaprobada, te pediremos las fotos de tu cédula y la cuenta donde recibirás el dinero.</p>
   <label class="row" style="gap:8px;margin-top:14px"><input type="checkbox" id="f_ok" style="width:auto"> Autorizo el tratamiento de mis datos y la consulta de mi información para el estudio del crédito.</label>
   <button class="btn full mt" id="f_btn">Enviar solicitud</button>`);
-  const DOCS = {};
-  document.querySelectorAll('.doc input').forEach(inp => inp.onchange = async () => {
-    const f = inp.files[0], box = inp.parentElement;
-    if (!f) return;
-    try {
-      DOCS[inp.dataset.k] = await comprimirImagen(f);
-      box.classList.add('ok');
-      box.querySelector('.ph').innerHTML = '<img src="data:image/jpeg;base64,' + DOCS[inp.dataset.k].data + '">';
-      box.querySelector('small').textContent = 'Listo ✓ (toca para cambiar)';
-    } catch (er) { toast(er.message, true); }
-  });
   $('#f_btn').onclick = e => {
     if (!$('#f_ok').checked) return toast('Debes aceptar la autorización de datos', true);
-    if (!$('#f_ban').value || !$('#f_cta').value.trim()) return toast('Indica la cuenta donde recibirás el dinero', true);
-    if (!DOCS.frente || !DOCS.reverso || !DOCS.selfie) return toast('Sube las fotos de tu cédula (frente y reverso) y la selfie', true);
     conBoton(e.currentTarget, async () => {
       const r = await api('enviarSolicitud', {
         documento: $('#f_doc').value, nombre: $('#f_nom').value.trim(), telefono: $('#f_tel').value, email: $('#f_mail').value.trim(),
         ocupacion: $('#f_ocu').value, direccion: $('#f_dir').value, barrio: $('#f_bar').value,
-        referencia: $('#f_ref').value, telReferencia: $('#f_tre').value, monto: S.monto, meses: S.meses, frecuencia: S.frec,
-        banco: $('#f_ban').value, tipoCuenta: $('#f_tip').value, numeroCuenta: $('#f_cta').value, docs: DOCS
+        referencia: $('#f_ref').value, telReferencia: $('#f_tre').value, monto: S.monto, meses: S.meses, frecuencia: S.frec
       });
       modal(`<div style="text-align:center;padding:20px 0">${GEM.replace('class="gem"', 'class="gem" style="width:64px;height:64px"')}
-        <h2 class="mt">¡Solicitud recibida!</h2><p class="mut">Radicado <b style="color:var(--gold2)">${r.id}</b>. Nuestro analista revisará tu solicitud y te contactará por WhatsApp.</p>
-        <p class="small mut mt">Puedes seguir el estado en <b>Mi crédito</b> con tu cédula y los últimos 4 dígitos de tu celular.</p>
+        <h2 class="mt">¡Solicitud recibida!</h2><p class="mut">Radicado <b style="color:var(--gold2)">${r.id}</b>. Nuestro analista revisará tu solicitud y te avisará por WhatsApp.</p>
+        <p class="small mut mt">Si es <b>preaprobada</b>, entra a <b>Mi crédito</b> con tu cédula y los últimos 4 dígitos de tu celular para subir las fotos de tu cédula y la cuenta donde te consignamos.</p>
         <button class="btn mt" onclick="cerrarModal()">Entendido</button></div>`);
     });
   };
@@ -378,6 +352,15 @@ function pintarConsulta() {
   const d = consulta.data, hoy = hoyLocal();
   let h = `<div class="row between mb"><div><div class="mut small">Hola,</div><div class="serif" style="font-size:28px;font-weight:700">${esc(d.nombre)}</div></div>
     <button class="btn dark sm" onclick="consulta=null;pintarMi()">Salir</button></div>`;
+  d.solicitudes.filter(s => s.estado === 'Preaprobada').forEach(s => {
+    h += `<div class="card mb" style="border-color:var(--gold)"><div class="row between"><b style="font-size:16px">🎉 ¡Tu crédito fue preaprobado!</b><span class="chip c-gold">${s.id}</span></div>
+      <div class="grid g3 mt small"><div><span class="mut">Monto</span><br><b style="font-size:18px">${money(s.monto)}</b></div>
+      <div><span class="mut">Cuota ${FREC_TXT[s.frecuencia] || ''}</span><br><b style="font-size:18px">${s.cuota ? money(s.cuota) : '—'}</b></div>
+      <div><span class="mut">Cuotas</span><br><b style="font-size:18px">${s.n || '—'}</b></div></div>
+      ${s.respuesta ? `<p class="small mut mt">${esc(s.respuesta)}</p>` : ''}
+      <p class="small mt">Para desembolsar necesitamos verificar tu identidad y saber a qué cuenta consignarte.</p>
+      <button class="btn full mt" onclick="completarDocs('${s.id}')">Completar documentos</button></div>`;
+  });
   const activos = d.creditos.filter(c => c.estado === 'Activo');
   if (!d.creditos.length) h += `<div class="card empty">Aún no tienes créditos desembolsados.</div>`;
   activos.concat(d.creditos.filter(c => c.estado !== 'Activo')).forEach(c => {
@@ -394,7 +377,7 @@ function pintarConsulta() {
   });
   if (d.solicitudes.length) {
     h += `<div class="card"><h3>Mis solicitudes</h3>` + d.solicitudes.map(s => `<div class="row between" style="padding:8px 0;border-bottom:1px solid var(--line)"><div>${s.tipo === 'Refinanciación' ? '<span class="chip c-refi">Refinanciación</span> ' : ''}<b>${money(s.monto)}</b> <span class="small mut">· ${s.meses}m · ${s.frecuencia} · ${s.fecha}</span>${s.respuesta && s.estado === 'Rechazada' ? `<div class="small mut">${esc(s.respuesta)}</div>` : ''}</div>
-      <span class="chip ${s.estado === 'Aprobada' ? 'c-ok' : s.estado === 'Rechazada' ? 'c-bad' : 'c-warn'}">${s.estado === 'Pendiente' ? 'En estudio' : s.estado}</span></div>`).join('') + `</div>`;
+      <span class="chip ${s.estado === 'Aprobada' ? 'c-ok' : s.estado === 'Rechazada' ? 'c-bad' : s.estado === 'Preaprobada' ? 'c-gold' : 'c-warn'}">${({ Pendiente: 'En estudio', Preaprobada: 'Preaprobada', 'Documentos recibidos': 'Verificando documentos', Aprobada: 'Desembolsada' })[s.estado] || s.estado}</span></div>`).join('') + `</div>`;
   }
   $('#app').innerHTML = h;
 }
@@ -434,6 +417,46 @@ function refinanciar(id) {
     modal(`<div style="text-align:center;padding:20px 0"><h2>Solicitud enviada</h2><p class="mut">Radicado <b style="color:var(--gold2)">${r.id}</b>. Revisaremos tu refinanciación y te contactaremos por WhatsApp. Mientras tanto tu crédito actual sigue vigente.</p><button class="btn mt" onclick="cerrarModal();pintarConsulta()">Entendido</button></div>`);
   });
   sim();
+}
+
+function completarDocs(solId) {
+  modal(`<h2>Completa tu solicitud</h2><p class="mut small">Solicitud ${solId} · solo falta este paso para el desembolso.</p>
+  <h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">¿DÓNDE TE CONSIGNAMOS?</h3>
+  <div class="grid g3 st">
+    <div><label>Banco / billetera *</label><select id="f_ban"><option value="">Selecciona…</option>${['Nequi', 'Daviplata', 'Bancolombia', 'Davivienda', 'Banco de Bogotá', 'BBVA', 'Banco Caja Social', 'Nu', 'Banco Popular', 'Banco de Occidente', 'Otro'].map(b => `<option>${b}</option>`).join('')}</select></div>
+    <div><label>Tipo *</label><select id="f_tip"><option>Billetera digital</option><option>Ahorros</option><option>Corriente</option></select></div>
+    <div><label>Número de cuenta *</label><input id="f_cta" inputmode="numeric"></div>
+  </div>
+  <p class="small mut" style="margin-top:6px">La cuenta debe estar a tu nombre.</p>
+  <h3 class="mt" style="font-size:13px;color:var(--gold);letter-spacing:.12em">VERIFICACIÓN DE IDENTIDAD</h3>
+  <div class="docs">
+    <label class="doc" id="d_frente"><input type="file" accept="image/*" data-k="frente"><span class="ph">🪪</span><b>Cédula · frente</b><small>Toca para subir foto</small></label>
+    <label class="doc" id="d_reverso"><input type="file" accept="image/*" data-k="reverso"><span class="ph">🔄</span><b>Cédula · reverso</b><small>Toca para subir foto</small></label>
+    <label class="doc" id="d_selfie"><input type="file" accept="image/*" data-k="selfie"><span class="ph">🤳</span><b>Selfie con tu cédula</b><small>Tu cara y la cédula visibles</small></label>
+  </div>
+  <label class="row" style="gap:8px;margin-top:14px"><input type="checkbox" id="k_ok" style="width:auto"> Confirmo que la cuenta está a mi nombre y que las fotos son auténticas.</label>
+  <button class="btn full mt" id="k_btn">Enviar documentos</button>`);
+  const DOCS = {};
+  document.querySelectorAll('.doc input').forEach(inp => inp.onchange = async () => {
+    const f = inp.files[0], box = inp.parentElement;
+    if (!f) return;
+    try {
+      DOCS[inp.dataset.k] = await comprimirImagen(f);
+      box.classList.add('ok');
+      box.querySelector('.ph').innerHTML = '<img src="data:image/jpeg;base64,' + DOCS[inp.dataset.k].data + '">';
+      box.querySelector('small').textContent = 'Listo ✓ (toca para cambiar)';
+    } catch (er) { toast(er.message, true); }
+  });
+  $('#k_btn').onclick = e => {
+    if (!$('#f_ban').value || !$('#f_cta').value.trim()) return toast('Indica la cuenta donde recibirás el dinero', true);
+    if (!DOCS.frente || !DOCS.reverso || !DOCS.selfie) return toast('Sube las fotos de tu cédula (frente y reverso) y la selfie', true);
+    if (!$('#k_ok').checked) return toast('Confirma que la cuenta está a tu nombre', true);
+    conBoton(e.currentTarget, async () => {
+      await api('clienteEnviarDocumentos', consulta.doc, consulta.ult4, solId, { banco: $('#f_ban').value, tipoCuenta: $('#f_tip').value, numeroCuenta: $('#f_cta').value, docs: DOCS });
+      consulta.data = await api('consultar', consulta.doc, consulta.ult4);
+      modal(`<div style="text-align:center;padding:20px 0"><h2>¡Documentos recibidos!</h2><p class="mut">Estamos verificando tu identidad. Cuando hagamos el desembolso te avisaremos por WhatsApp.</p><button class="btn mt" onclick="cerrarModal();pintarConsulta()">Entendido</button></div>`);
+    });
+  };
 }
 
 function reportar(id) {

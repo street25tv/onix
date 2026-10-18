@@ -306,7 +306,7 @@ function solicitudes() {
     return `<div class="card"><div class="row" style="align-items:flex-start;gap:16px">
       <div class="score sc-${a.semaforo}">${a.score}</div>
       <div style="flex:1;min-width:220px">
-        <div class="row between"><div>${s.tipo === 'Refinanciación' ? `<span class="chip c-refi">Refinanciación de ${s.creditoOrigen}</span> ` : ''}<b style="font-size:17px">${esc(s.nombre)}</b> <span class="small mut">CC ${esc(s.documento)} · ${s.id} · ${s.fecha}</span></div>
+        <div class="row between"><div>${s.tipo === 'Refinanciación' ? `<span class="chip c-refi">Refinanciación de ${s.creditoOrigen}</span> ` : ''}<b style="font-size:17px">${esc(s.nombre)}</b> <span class="small mut">CC ${esc(s.documento)} · ${s.id} · ${s.fecha}</span> ${chipSol(s.estado)}</div>
         <span class="chip ${a.semaforo === 'verde' ? 'c-ok' : a.semaforo === 'amarillo' ? 'c-warn' : 'c-bad'}">${a.recomendacion}</span></div>
         <div class="grid g4 mt small">
           <div><span class="mut">Solicita</span><br><b>${money(s.monto)}</b> · ${s.meses}m · ${s.frecuencia}</div>
@@ -320,9 +320,9 @@ function solicitudes() {
         <div class="small mut mt">📱 ${esc(s.telefono)}${s.email ? ' · ✉️ ' + esc(s.email) : ''} · ${esc(s.ocupacion)} · ${esc(s.direccion)} ${esc(s.barrio)} · Ref: ${esc(s.referencia || '—')} ${esc(s.telReferencia || '')}${s.tipo === 'Refinanciación' && s.destino ? ' · Motivo: ' + esc(s.destino) : ''}</div>
         ${s.numeroCuenta ? `<div class="small mt">🏧 Consignar a: <b>${esc(s.banco)} ${esc(s.tipoCuenta)} Nº ${esc(s.numeroCuenta)}</b></div>` : ''}
         ${s.docs && s.docs.frente ? `<div class="row mt"><a class="btn dark sm" target="_blank" href="${s.docs.frente}">🪪 Cédula frente</a><a class="btn dark sm" target="_blank" href="${s.docs.reverso}">🔄 Cédula reverso</a><a class="btn dark sm" target="_blank" href="${s.docs.selfie}">🤳 Selfie</a></div>` : ''}
-        <div class="row mt">${s.tipo === 'Refinanciación' ? `<button class="btn sm" onclick="refinanciar('${s.creditoOrigen}','${s.id}')">Simular y aprobar</button>` : `<button class="btn sm" onclick="aprobar('${s.id}')">Aprobar y desembolsar</button>`}
+        <div class="row mt">${accionesSol(s)}
           <button class="btn bad sm" onclick="rechazar('${s.id}')">Rechazar</button>
-          <a class="btn dark sm" target="_blank" href="${wa(s.telefono, 'Hola ' + s.nombre.split(' ')[0] + ', te escribimos de ' + D.config.nombre + ' sobre tu solicitud de crédito ' + s.id + '.')}">WhatsApp</a></div>
+          <a class="btn dark sm" target="_blank" href="${wa(s.telefono, msjSol(s))}">WhatsApp</a></div>
       </div></div></div>`;
   }).join('') + '</div>';
 }
@@ -366,6 +366,45 @@ function aprobar(id) {
   $('#ap_btn').onclick = e => conBoton(e.currentTarget, async () => {
     const cid = await api('adminAprobar', T, id, leerParams());
     cerrarModal(); toast('Crédito ' + cid + ' creado'); await cargar(true); detalle(cid);
+  });
+}
+function chipSol(e) {
+  if (e === 'Documentos recibidos') return '<span class="chip c-ok">📎 Documentos recibidos</span>';
+  if (e === 'Preaprobada') return '<span class="chip c-gold">Preaprobada · esperando documentos</span>';
+  return '<span class="chip c-warn">Nueva</span>';
+}
+function accionesSol(s) {
+  if (s.tipo === 'Refinanciación') return `<button class="btn sm" onclick="refinanciar('${s.creditoOrigen}','${s.id}')">Simular y aprobar</button>`;
+  if (s.estado === 'Pendiente') return `<button class="btn sm" onclick="preaprobar('${s.id}')">Preaprobar</button>`;
+  if (s.estado === 'Documentos recibidos') return `<button class="btn sm" onclick="aprobar('${s.id}')">Verificar y desembolsar</button>`;
+  return '';
+}
+function msjSol(s) {
+  const n = s.nombre.split(' ')[0], url = typeof BASE_URL !== 'undefined' ? BASE_URL : D.url;
+  if (s.estado === 'Preaprobada') return `Hola ${n}, ¡tu crédito con ${D.config.nombre} por ${money(s.monto)} fue preaprobado! 🎉 Para desembolsarte entra a ${url} › Mi crédito (con tu cédula y los últimos 4 dígitos de tu celular) y sube las fotos de tu cédula y la cuenta donde te consignamos.`;
+  return `Hola ${n}, te escribimos de ${D.config.nombre} sobre tu solicitud de crédito ${s.id}.`;
+}
+function preaprobar(id) {
+  const s = D.solicitudes.find(x => x.id === id);
+  modal(`<h2>Preaprobar solicitud</h2><p class="mut small">${esc(s.nombre)} · score ${s.analisis.score} (${s.analisis.recomendacion})</p>
+    <div class="grid g3 st">
+      <div><label>Monto</label><input id="pa_c" inputmode="numeric" value="${Number(s.monto).toLocaleString('es-CO')}"></div>
+      <div><label>Meses</label><input id="pa_m" type="number" min="1" value="${s.meses}"></div>
+      <div><label>Frecuencia</label><select id="pa_f">${D.config.frecuencias.map(f => `<option ${f === s.frecuencia ? 'selected' : ''}>${f}</option>`).join('')}</select></div>
+    </div><div class="sim" id="pa_sim"></div>
+    <label>Mensaje para el cliente (opcional)</label><input id="pa_n" placeholder="Ej: Aprobamos $500.000 a 3 meses">
+    <p class="small mut mt">El cliente verá la preaprobación en <b>Mi crédito</b> y deberá subir su cédula, la selfie y la cuenta de desembolso. Luego podrás verificar y desembolsar.</p>
+    <button class="btn full mt" id="pa_b">Preaprobar</button>`);
+  const f = () => { const c = calc(+$('#pa_c').value.replace(/\D/g, ''), +$('#pa_m').value || 1, $('#pa_f').value);
+    $('#pa_sim').innerHTML = `<div>Cuota<b>${money(c.cuota)}</b></div><div>Nº cuotas<b>${c.n}</b></div><div>Interés<b>${money(c.interes)}</b></div><div>Total<b>${money(c.total)}</b></div>`; };
+  ['pa_c', 'pa_m', 'pa_f'].forEach(i => $('#' + i).addEventListener('input', f));
+  $('#pa_c').addEventListener('input', e => { const n = e.target.value.replace(/\D/g, ''); e.target.value = n ? Number(n).toLocaleString('es-CO') : ''; });
+  f();
+  $('#pa_b').onclick = e => conBoton(e.currentTarget, async () => {
+    await api('adminPreaprobar', T, id, { capital: $('#pa_c').value.replace(/\D/g, ''), meses: $('#pa_m').value, frecuencia: $('#pa_f').value, nota: $('#pa_n').value.trim() });
+    cerrarModal(); toast('Solicitud preaprobada'); await cargar(true);
+    const s2 = D.solicitudes.find(x => x.id === id);
+    if (s2) modal(`<div style="text-align:center;padding:16px 0"><h2>Preaprobada ✓</h2><p class="mut">Avísale al cliente para que suba sus documentos.</p><a class="btn full mt" target="_blank" href="${wa(s2.telefono, msjSol(s2))}">Avisar por WhatsApp</a><button class="btn dark full mt" onclick="cerrarModal()">Cerrar</button></div>`);
   });
 }
 function rechazar(id) {
