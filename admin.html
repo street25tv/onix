@@ -214,6 +214,20 @@ function refiHTML(r) {
     (dif > 0 ? '<span style="color:var(--ok)">La cuota mensual baja ' + money(dif) + ' (' + Math.round(dif / (a.cuotaMensual || 1) * 100) + '%)</span>'
              : '<span style="color:var(--warn)">La cuota mensual sube ' + money(-dif) + '</span>') + '</div>';
 }
+function comprimirImagen(file, max = 1600, q = 0.82) {
+  return new Promise((ok, ko) => {
+    if (!/^image\//.test(file.type || 'image/')) return ko(new Error('El archivo debe ser una imagen'));
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      ok({ mime: 'image/jpeg', data: c.toDataURL('image/jpeg', q).split(',')[1] });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); ko(new Error('No se pudo leer la imagen. Intenta con otra foto.')); };
+    img.src = url;
+  });
+}
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 function tablaCuotas(cuotas, hoy) {
   return '<div class="tw" style="max-height:340px;overflow:auto"><table><thead><tr><th>#</th><th>Vence</th><th class="num">Cuota</th><th class="num">Abonado</th><th>Estado</th></tr></thead><tbody>' +
@@ -297,13 +311,15 @@ function solicitudes() {
         <div class="grid g4 mt small">
           <div><span class="mut">Solicita</span><br><b>${money(s.monto)}</b> · ${s.meses}m · ${s.frecuencia}</div>
           <div><span class="mut">Cuota ${s.frecuencia.toLowerCase()}</span><br><b>${money(a.simulacion.cuota)}</b> × ${a.simulacion.n}</div>
-          <div><span class="mut">Ingresos / cuota mes</span><br><b>${money(s.ingresos)}</b> · ${a.ratio}%</div>
-          <div><span class="mut">Monto sugerido</span><br><b>${money(a.montoSugerido)}</b></div>
+          <div><span class="mut">Ingresos / cuota mes</span><br>${s.ingresos ? `<b>${money(s.ingresos)}</b> · ${a.ratio}%` : '<span class="mut">No declarados</span>'}</div>
+          <div><span class="mut">Monto sugerido</span><br>${a.montoSugerido ? `<b>${money(a.montoSugerido)}</b>` : '<span class="mut">—</span>'}</div>
         </div>
         ${s.refi && s.refi.actual ? `<div class="small mt">Actual: saldo <b>${money(s.refi.actual.saldo)}</b> · cuota ${money(s.refi.actual.valorCuota)} ${FREC_TXT[s.refi.actual.frecuencia]} · ${s.refi.actual.diasAtraso} días de atraso → Nuevo: <b>${money(s.refi.simulacion.cuota)}</b> ${FREC_TXT[s.refi.simulacion.frecuencia]} × ${s.refi.simulacion.n} · total ${money(s.refi.nuevoSaldo)}${s.adicional ? ' · incluye ' + money(s.adicional) + ' adicional' : ''}</div>` : ''}
         ${s.refi && s.refi.error ? `<div class="small mt" style="color:var(--bad)">${esc(s.refi.error)}</div>` : ''}
         <ul class="motivos">${a.motivos.map(m => `<li>${esc(m)}</li>`).join('')}</ul>
-        <div class="small mut mt">${esc(s.ocupacion)} · ${esc(s.direccion)} ${esc(s.barrio)} · Destino: ${esc(s.destino || '—')} · Ref: ${esc(s.referencia || '—')} ${esc(s.telReferencia || '')}</div>
+        <div class="small mut mt">📱 ${esc(s.telefono)}${s.email ? ' · ✉️ ' + esc(s.email) : ''} · ${esc(s.ocupacion)} · ${esc(s.direccion)} ${esc(s.barrio)} · Ref: ${esc(s.referencia || '—')} ${esc(s.telReferencia || '')}${s.tipo === 'Refinanciación' && s.destino ? ' · Motivo: ' + esc(s.destino) : ''}</div>
+        ${s.numeroCuenta ? `<div class="small mt">🏧 Consignar a: <b>${esc(s.banco)} ${esc(s.tipoCuenta)} Nº ${esc(s.numeroCuenta)}</b></div>` : ''}
+        ${s.docs && s.docs.frente ? `<div class="row mt"><a class="btn dark sm" target="_blank" href="${s.docs.frente}">🪪 Cédula frente</a><a class="btn dark sm" target="_blank" href="${s.docs.reverso}">🔄 Cédula reverso</a><a class="btn dark sm" target="_blank" href="${s.docs.selfie}">🤳 Selfie</a></div>` : ''}
         <div class="row mt">${s.tipo === 'Refinanciación' ? `<button class="btn sm" onclick="refinanciar('${s.creditoOrigen}','${s.id}')">Simular y aprobar</button>` : `<button class="btn sm" onclick="aprobar('${s.id}')">Aprobar y desembolsar</button>`}
           <button class="btn bad sm" onclick="rechazar('${s.id}')">Rechazar</button>
           <a class="btn dark sm" target="_blank" href="${wa(s.telefono, 'Hola ' + s.nombre.split(' ')[0] + ', te escribimos de ' + D.config.nombre + ' sobre tu solicitud de crédito ' + s.id + '.')}">WhatsApp</a></div>
@@ -341,7 +357,8 @@ function leerParams() {
 
 function aprobar(id) {
   const s = D.solicitudes.find(x => x.id === id);
-  modal(`<h2>Aprobar crédito</h2><p class="mut small">${esc(s.nombre)} · score ${s.analisis.score} · sugerido ${money(s.analisis.montoSugerido)}</p>
+  modal(`<h2>Aprobar crédito</h2><p class="mut small">${esc(s.nombre)} · score ${s.analisis.score}${s.analisis.montoSugerido ? ' · sugerido ' + money(s.analisis.montoSugerido) : ''}</p>
+    ${s.numeroCuenta ? `<div class="card" style="padding:12px;margin-top:10px"><span class="small mut">Transferir el desembolso a</span><br><b>${esc(s.banco)} ${esc(s.tipoCuenta)} Nº ${esc(s.numeroCuenta)}</b> · titular ${esc(s.nombre)}</div>` : ''}
     ${formParams({ capital: s.monto, meses: s.meses, frecuencia: s.frecuencia })}
     <p class="small mut mt">Al aprobar se crea el cliente, el plan de cuotas y se registra el desembolso en caja.</p>
     <button class="btn full mt" id="ap_btn">Aprobar y desembolsar</button>`);
@@ -446,7 +463,7 @@ async function detalle(id) {
   const cobs = '<option value="">— Sin asignar —</option>' + D.cobradores.map(x => `<option value="${x.id}" ${x.id === c.cobradorId ? 'selected' : ''}>${esc(x.nombre)}</option>`).join('');
   modal(`<h2>${esc(c.cliente)}</h2><div class="row between"><span class="mut small">${c.id} · CC ${esc(c.documento)} · desembolso ${c.desembolso}</span>${chipSit(c.situacion, c.diasAtraso)}</div>
   <div class="grid g4 mt">${kpi('Saldo', money(c.saldo), 'de ' + money(c.total), 'gold')}${kpi('Exigible', money(c.exigible), c.cuotasVencidas + ' cuota(s) vencidas')}${kpi('Pagado', money(c.pagado), c.avance + '%')}${kpi('Cuota', money(c.valorCuota), c.frecuencia + ' · ' + c.numCuotas + ' cuotas')}</div>
-  <div class="small mut mt">📞 ${esc(c.contacto.telefono)} · 📍 ${esc(c.contacto.direccion)} ${esc(c.contacto.barrio)} · ${esc(c.contacto.ocupacion)} · Ref: ${esc(c.contacto.referencia)} ${esc(c.contacto.telReferencia)}</div>
+  <div class="small mut mt">📞 ${esc(c.contacto.telefono)}${c.contacto.email ? ' · ✉️ ' + esc(c.contacto.email) : ''}${c.contacto.cuenta ? ' · 🏧 ' + esc(c.contacto.cuenta) : ''} · 📍 ${esc(c.contacto.direccion)} ${esc(c.contacto.barrio)} · ${esc(c.contacto.ocupacion)} · Ref: ${esc(c.contacto.referencia)} ${esc(c.contacto.telReferencia)}</div>
   <div class="small mut">Capital ${money(c.capital)} · Interés ${money(c.interes)} (${c.tasa}% × ${c.meses} meses)${c.notas ? ' · ' + esc(c.notas) : ''}</div>
   ${c.estado === 'Activo' ? `<div class="card mt" style="padding:14px"><h3>Registrar pago</h3><div class="grid g3 st">
     <div><label>Valor</label><input id="pg_v" inputmode="numeric" value="${Number(Math.min(sug, c.saldo)).toLocaleString('es-CO')}"></div>
